@@ -1,0 +1,150 @@
+[
+  {
+    "model": "meta-models/Muse-Spark-Open-816B-A42B",
+    "environment": "dorian-gray",
+    "variant": "standard",
+    "seeds": [
+      1001
+    ],
+    "context_policy": "full_history",
+    "stats": {
+      "seeds_count": 1,
+      "mean": 0.9938,
+      "std": 0.0,
+      "min": 0.9938,
+      "max": 0.9938,
+      "success_rate": 1.0,
+      "compliance_rate": 1.0,
+      "smart_default_rate": 0.0,
+      "parse_failures": 0,
+      "parse_failure_rate": 0.0
+    },
+    "runs": [
+      {
+        "model": "meta-models/Muse-Spark-Open-816B-A42B",
+        "environment": "dorian-gray",
+        "seed": 1001,
+        "variant": "standard",
+        "score": 0.9938,
+        "steps": 15,
+        "path": [
+          "description",
+          "run_retention_audit_diagnostic",
+          "read_status",
+          "read_logs",
+          "read_metrics",
+          "read_retention_index_summary",
+          "read_reconciliation_report",
+          "read_status",
+          "run_retention_audit_diagnostic",
+          "attempt_worker_recovery",
+          "read_status",
+          "read_metrics",
+          "read_retention_index_summary",
+          "run_retention_audit_diagnostic",
+          "finalize"
+        ],
+        "raw_responses": [
+          "{\"action_index\": 0}",
+          "{\"action_index\": 6}",
+          "{\"action_index\": 1}",
+          "{\"action_index\": 2}",
+          "{\"action_index\": 3}",
+          "{\"action_index\": 4}",
+          "{\"action_index\": 5}",
+          "{\"action_index\": 1}",
+          "{\"action_index\": 6}",
+          "{\"action_index\": 7}",
+          "{\"action_index\": 1}",
+          "{\"action_index\": 3}",
+          "{\"action_index\": 4}",
+          "{\"action_index\": 6}",
+          "{\"action_index\": 9}"
+        ],
+        "parse_failures": 0,
+        "task_success": true,
+        "constraint_compliance": true,
+        "total_prompt_tokens": 91286,
+        "total_completion_tokens": 3076,
+        "tokens_measured": true,
+        "truncation_provenance": {
+          "policy": "full_history",
+          "input_budget": 7040,
+          "mandatory_tokens": 262,
+          "original_total_tokens": 13227,
+          "final_total_tokens": 6514,
+          "dropped_tokens_estimate": 6713,
+          "dropped_history_count": 0,
+          "truncation_method": "observation_truncated",
+          "prompt_version": "sre-json-action-index-v2"
+        },
+        "provenance": {
+          "repo_commit": "5008d8f098b4a0045d5ee78e157aa1c08b2a12a0-dirty",
+          "reproducibility_status": "DIRTY_TREE_UNVERIFIED",
+          "model": "meta-models/Muse-Spark-Open-816B-A42B",
+          "canonical_model": "meta-models/Muse-Spark-Open-816B-A42B",
+          "provider": "modal",
+          "environment": "dorian-gray",
+          "seed": 1001,
+          "variant": "standard",
+          "prompt_version": "sre-json-action-index-v2",
+          "system_prompt_sha256": "46b1a180a7e6f29184e50b77b6f33f8745177a77467ae450d95fdb497424b1c4",
+          "context_policy": "full_history",
+          "harness_source_hashes": {
+            "benchmark_models_sha256": "04f92a730526d481df780f999027e98952e710a1a51ac49b416497e8e8d40a5e",
+            "gymnasium_wrapper_sha256": "9c603402f3b7db5758faebcd5224ffa1445aabea9b467250138e28e23f1700bf"
+          },
+          "decoding": {
+            "temperature": 0.0,
+            "max_tokens": 1024
+          },
+          "all_provider_configs": {
+            "ollama": {
+              "num_ctx": 8192,
+              "temperature": 0.0,
+              "json_format": true
+            },
+            "groq": {
+              "temperature": 0.0,
+              "max_tokens": 1024
+            },
+            "meta": {
+              "temperature": 0.0,
+              "max_tokens": 300
+            },
+            "baseten": {
+              "temperature": 0.0,
+              "max_tokens": 300
+            },
+            "modal": {
+              "temperature": 0.0,
+              "max_tokens": 1024
+            },
+            "openai": {
+              "temperature": 0.0,
+              "max_tokens": 1024
+            }
+          },
+          "started_at": "2026-11-02T11:09:29.020523+00:00",
+          "finished_at": "2026-11-02T11:10:01.155464+00:00"
+        },
+        "outcome": "SOLVED",
+        "duration_seconds": 32.14,
+        "used_smart_default": false,
+        "action_evidence": {
+          "worker_recovery_attempted": true,
+          "backfill_reenabled": true,
+          "queue_reprocessed": 1280,
+          "health_report_patched": false
+        },
+        "scoring_breakdown": {
+          "evidence": 0.3,
+          "task_completion": 0.4,
+          "diagnosis": 0.15,
+          "constraint_compliance": 0.1,
+          "efficiency": 0.0438
+        }
+      }
+    ]
+  }
+]

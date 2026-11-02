@@ -37,10 +37,10 @@ if hasattr(sys.stderr, "reconfigure"):
 _env_candidates = [
     Path.cwd() / ".env",
     Path(__file__).resolve().parent / ".env",
-    Path(__file__).resolve().parents[1] / ".env",
-    Path(__file__).resolve().parents[2] / ".env",
     Path("D:/Shashi/agent-praxis/.env"),
 ]
+for _p in Path(__file__).resolve().parents:
+    _env_candidates.append(_p / ".env")
 for _env_path in _env_candidates:
     if _env_path.is_file():
         with contextlib.suppress(Exception), open(_env_path, encoding="utf-8") as _env_f:
@@ -242,6 +242,9 @@ def apply_context_policy(
 
 def _repo_commit_sha() -> str:
     """Best-effort git revision for provenance with dirty tree detection. Never raises."""
+    env_sha = os.environ.get("PRAXIS_GIT_COMMIT") or os.environ.get("GIT_COMMIT")
+    if env_sha:
+        return env_sha.strip()
     try:
         completed = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -394,7 +397,11 @@ def _provenance(
     )
     commit_sha = _repo_commit_sha()
     reproducibility_status = (
-        "DIRTY_TREE_UNVERIFIED" if commit_sha.endswith("-dirty") else "CLEAN_GIT_COMMIT"
+        "DIRTY_TREE_UNVERIFIED"
+        if commit_sha.endswith("-dirty")
+        else "UNKNOWN_REVISION_UNVERIFIED"
+        if commit_sha == "unknown"
+        else "CLEAN_GIT_COMMIT"
     )
 
     return {

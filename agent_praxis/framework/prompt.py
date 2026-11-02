@@ -19,9 +19,32 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from enum import StrEnum
+from pathlib import Path
 from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
+
+# Auto-load .env if present across working dir or repository roots
+_env_candidates = [
+    Path.cwd() / ".env",
+    Path(__file__).resolve().parent / ".env",
+    Path(__file__).resolve().parents[1] / ".env",
+    Path(__file__).resolve().parents[2] / ".env",
+    Path(__file__).resolve().parents[3] / ".env",
+    Path("D:/Shashi/agent-praxis/.env"),
+]
+for _env_path in _env_candidates:
+    if _env_path.is_file():
+        with contextlib.suppress(Exception), open(_env_path, encoding="utf-8") as _env_f:
+            for _env_line in _env_f:
+                _env_line = _env_line.strip()
+                if _env_line and not _env_line.startswith("#") and "=" in _env_line:
+                    _env_k, _env_v = _env_line.split("=", 1)
+                    _env_k = _env_k.strip()
+                    _env_v = _env_v.strip().strip("'\"")
+                    if _env_k and not os.environ.get(_env_k):
+                        os.environ[_env_k] = _env_v
+
 
 PROMPT_VERSION = "sre-json-action-index-v2"
 DEFAULT_CONTEXT_POLICY = "full_history"
@@ -51,6 +74,75 @@ BASETEN_URL = os.environ.get(
     "BASETEN_API_URL",
     os.environ.get("BASETEN_MODEL_URL", "https://inference.baseten.co/v1/chat/completions"),
 )
+
+# Modal Model Endpoint Registry (Finals)
+MODAL_MODEL_ENDPOINTS: dict[str, str] = {
+    "deepseek-ai/DeepSeek-V4.1-Flash": os.environ.get(
+        "ENDPOINT_DEEPSEEK_AI_DEEPSEEK_V4_1_FLASH",
+        "https://shashikant649--ep-deepseek-v4-1-flash-server.us-west.modal.direct/v1",
+    ),
+    "deepseek-ai/DeepSeek-V4.1-Flash-1017": os.environ.get(
+        "ENDPOINT_DEEPSEEK_AI_DEEPSEEK_V4_1_FLASH_1017",
+        "https://shashikant649--ep-deepseek-v4-1-flash-1017-server.us-west.modal.direct/v1",
+    ),
+    "zai-org/GLM-5.3-Flash": os.environ.get(
+        "ENDPOINT_ZAI_ORG_GLM_5_3_FLASH",
+        "https://shashikant649--ep-glm-5-3-flash-server.us-west.modal.direct/v1",
+    ),
+    "zai-org/GLM-5.3": os.environ.get(
+        "ENDPOINT_ZAI_ORG_GLM_5_3",
+        "https://shashikant649--ep-glm-5-3-server.us-west.modal.direct/v1",
+    ),
+    "nvidia/GLM-5.3-Flash-NVFP4": os.environ.get(
+        "ENDPOINT_NVIDIA_GLM_5_3_FLASH_NVFP4",
+        "https://shashikant649--ep-glm-5-3-flash-nvfp4-server.us-west.modal.direct/v1",
+    ),
+    "moonshotai/Kimi-K3": os.environ.get(
+        "ENDPOINT_MOONSHOTAI_KIMI_K3",
+        "https://shashikant649--ep-kimi-k3-server.us-west.modal.direct/v1",
+    ),
+    "meta-models/Muse-Spark-Open-816B-A42B": os.environ.get(
+        "ENDPOINT_META_MODELS_MUSE_SPARK_OPEN_816B_A42B",
+        "https://shashikant649--ep-muse-spark-open-816b-a42b-server.us-west.modal.direct/v1",
+    ),
+    "Qwen/Qwen3.8-Max-VL-Thinking": os.environ.get(
+        "ENDPOINT_QWEN_QWEN3_8_MAX_VL_THINKING",
+        "https://shashikant649--ep-qwen3-8-max-vl-thinking-server.us-west.modal.direct/v1",
+    ),
+}
+
+MODAL_MODELS: list[str] = list(MODAL_MODEL_ENDPOINTS.keys())
+
+
+def resolve_modal_endpoint(model: str) -> tuple[str, str] | None:
+    """Resolve a model name or alias to its canonical Modal model identifier and endpoint URL."""
+    if not model:
+        return None
+    if model in MODAL_MODEL_ENDPOINTS:
+        return model, MODAL_MODEL_ENDPOINTS[model]
+
+    clean = model.strip().lower()
+    for m, ep in MODAL_MODEL_ENDPOINTS.items():
+        if clean == m.lower() or clean == m.split("/")[-1].lower():
+            return m, ep
+
+    aliases = {
+        "deepseek-v4.1-flash": "deepseek-ai/DeepSeek-V4.1-Flash",
+        "deepseek-v4.1-flash-1017": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+        "glm-5.3-flash": "zai-org/GLM-5.3-Flash",
+        "glm-5.3": "zai-org/GLM-5.3",
+        "glm-5.3-flash-nvfp4": "nvidia/GLM-5.3-Flash-NVFP4",
+        "kimi-k3": "moonshotai/Kimi-K3",
+        "muse-spark-816b": "meta-models/Muse-Spark-Open-816B-A42B",
+        "muse-spark-open-816b": "meta-models/Muse-Spark-Open-816B-A42B",
+        "qwen3.8-max-vl-thinking": "Qwen/Qwen3.8-Max-VL-Thinking",
+        "qwen3.8-thinking": "Qwen/Qwen3.8-Max-VL-Thinking",
+    }
+    if clean in aliases:
+        canonical = aliases[clean]
+        return canonical, MODAL_MODEL_ENDPOINTS[canonical]
+    return None
+
 
 
 class ActionOutcomeKind(StrEnum):
@@ -99,6 +191,7 @@ PROVIDER_DEFAULT_CONTEXT_LIMITS: dict[str, ContextLimits] = {
     "groq": ContextLimits(context_window=8192, output_reserve=1024, safety_margin=128),
     "meta": ContextLimits(context_window=8192, output_reserve=1024, safety_margin=128),
     "baseten": ContextLimits(context_window=8192, output_reserve=1024, safety_margin=128),
+    "modal": ContextLimits(context_window=8192, output_reserve=1024, safety_margin=128),
     "openai": ContextLimits(context_window=8192, output_reserve=1024, safety_margin=128),
     "default": ContextLimits(context_window=8192, output_reserve=1024, safety_margin=128),
 }
@@ -1881,6 +1974,8 @@ def query_provider_action(
     baseten_api_url: str | None = None,
     openai_api_key: str | None = None,
     openai_api_url: str | None = None,
+    modal_api_key: str | None = None,
+    modal_api_url: str | None = None,
 ) -> ModelTurnResponse:
     """Canonical model routing function returning a unified ModelTurnResponse."""
     prov = provider.lower()
@@ -1893,14 +1988,54 @@ def query_provider_action(
             limits=limits,
         )
 
+    modal_match = resolve_modal_endpoint(model)
+    if prov in ("modal",) or (prov == "auto" and modal_match is not None):
+        canonical_model, endpoint_url = modal_match if modal_match else (model, modal_api_url or "")
+        key = (
+            modal_api_key
+            or os.environ.get("MODAL_TOKEN")
+            or f"{os.environ.get('MODAL_KEY', '')}.{os.environ.get('MODAL_SECRET', '')}".strip(".")
+        )
+        if not key:
+            return ModelTurnResponse(
+                outcome_kind=ActionOutcomeKind.PROVIDER_ERROR,
+                action_index=None,
+                action_name=None,
+                raw_response="",
+                error_message="Modal token not provided (set MODAL_TOKEN or MODAL_KEY and MODAL_SECRET)",
+                parse_status="provider_error",
+                token_usage=TokenUsage(),
+            )
+        target_url = modal_api_url or endpoint_url
+        if not target_url:
+            return ModelTurnResponse(
+                outcome_kind=ActionOutcomeKind.PROVIDER_ERROR,
+                action_index=None,
+                action_name=None,
+                raw_response="",
+                error_message=f"No Modal endpoint URL configured for model '{model}'",
+                parse_status="provider_error",
+                token_usage=TokenUsage(),
+            )
+        return get_action_from_openai(
+            model=canonical_model,
+            messages=messages,
+            action_names=action_names,
+            api_key=key,
+            url=target_url,
+            context_policy=context_policy,
+            limits=limits or PROVIDER_DEFAULT_CONTEXT_LIMITS["modal"],
+            max_tokens=1024,
+        )
+
+    is_baseten_model = (
+        "baseten" in model.lower()
+        or "muse-spark-open-1026" in model.lower()
+        or model.lower() in ("muse-spark-open", "muse-spark", "meta/muse-spark-open")
+    )
     if prov == "baseten" or (
         prov == "auto"
-        and (
-            baseten_api_key
-            or os.environ.get("BASETEN_API_KEY")
-            or "baseten" in model.lower()
-            or "muse-spark" in model.lower()
-        )
+        and is_baseten_model
         and (baseten_api_key or os.environ.get("BASETEN_API_KEY"))
     ):
         key = baseten_api_key or os.environ.get("BASETEN_API_KEY", "")
@@ -1924,7 +2059,7 @@ def query_provider_action(
             limits=limits,
         )
 
-    if prov == "meta" or (prov == "auto" and ("meta" in model.lower() or "llama" in model.lower())):
+    if prov == "meta" or (prov == "auto" and ("meta" in model.lower() or "llama" in model.lower()) and not ("llama3" in model.lower() and ":" in model)):
         key = meta_api_key or os.environ.get("META_API_KEY", os.environ.get("LLAMA_API_KEY", ""))
         if not key:
             if "muse" in model.lower():
@@ -1956,7 +2091,15 @@ def query_provider_action(
             limits=limits,
         )
 
-    if prov == "groq" or (prov == "auto" and ("groq" in model.lower() or "/" in model)):
+    is_groq_model = (
+        "groq" in model.lower()
+        or model in ("openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen-2.5-32b", "meta-llama/Llama-3.3-70B-Instruct")
+    )
+    if prov == "groq" or (
+        prov == "auto"
+        and is_groq_model
+        and (groq_api_key or os.environ.get("GROQ_API_KEY"))
+    ):
         key = groq_api_key or os.environ.get("GROQ_API_KEY", "")
         if not key:
             return ModelTurnResponse(

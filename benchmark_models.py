@@ -334,7 +334,13 @@ def _effective_provider(model: str, provider: str = "auto") -> str:
     ):
         return "baseten"
 
-    if os.environ.get("OPENAI_API_KEY") and (model.startswith("gpt-") or "openai" in model.lower()):
+    if os.environ.get("OPENAI_API_KEY") and (
+        model.startswith("gpt-")
+        or "openai" in model.lower()
+        or "deepseek" in model.lower()
+        or "glm" in model.lower()
+        or "kimi" in model.lower()
+    ):
         return "openai"
 
     if is_meta_model(model, provider=provider):

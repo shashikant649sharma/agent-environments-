@@ -81,6 +81,19 @@ READ_ONLY_ACTIONS: dict[str, list[str]] = {
 }
 
 # Canonical verified baseline summary from 300-run sweep (v0.5.0, commit da17b0b)
+CANONICAL_SEEDS: dict[str, int] = {
+    "1984": 20260501,
+    "catch-22": 20260301,
+    "dorian-gray": 20260201,
+    "frankenstein": 18180101,
+    "library-of-babel": 20261101,
+    "metamorphosis": 20260401,
+    "othello": 20261115,
+    "sophies-choice": 20261026,
+    "sorcerers-apprentice": 20261001,
+    "the-trial": 20260601,
+}
+
 VERIFIED_CANONICAL_SUMMARY: dict[str, dict[str, float]] = {
     "1984": {
         "noop": 0.0,
@@ -452,7 +465,7 @@ def format_live_comparison_table(results: list[dict[str, Any]], as_markdown: boo
 
 def run_demo(
     target_env: str | None = None,
-    seed: int = 42,
+    seed: int | None = None,
     live: bool = False,
     as_json: bool = False,
     as_markdown: bool = False,
@@ -464,22 +477,24 @@ def run_demo(
             all_live: dict[str, list[dict[str, Any]]] = {}
             policies = ["noop", "read_only", "random", "ordinal", "blind_search", "oracle"]
             for env_name in sorted(ENVIRONMENT_NAMES):
-                all_live[env_name] = [run_live_policy(env_name, p, seed=seed) for p in policies]
+                eff_seed = seed if seed is not None else CANONICAL_SEEDS.get(env_name, 20260501)
+                all_live[env_name] = [run_live_policy(env_name, p, seed=eff_seed) for p in policies]
 
             if as_json:
                 print(json.dumps(all_live, indent=2))
                 return 0
 
             print(
-                f"\n[Agent Praxis v0.5.0] Live Multi-Policy Sweep Across All 10 Environments (Seed {seed})"
+                f"\n[Agent Praxis v0.5.1] Live Multi-Policy Sweep Across All 10 Environments (Seed {seed})"
             )
             for env_name, env_results in all_live.items():
                 print(f"\n--- Environment: {env_name} ---")
                 print(format_live_comparison_table(env_results, as_markdown=as_markdown))
             return 0
 
+        eff_seed = seed if seed is not None else CANONICAL_SEEDS.get(env_to_run, 20260501)
         policies = ["noop", "read_only", "random", "ordinal", "blind_search", "oracle"]
-        live_results = [run_live_policy(env_to_run, p, seed=seed) for p in policies]
+        live_results = [run_live_policy(env_to_run, p, seed=eff_seed) for p in policies]
 
         if as_json:
             print(
@@ -490,7 +505,7 @@ def run_demo(
             return 0
 
         print(
-            f"\n[Agent Praxis v0.5.0] Live Policy Execution Demo on '{env_to_run}' (Seed {seed}):"
+            f"\n[Agent Praxis v0.5.1] Live Policy Execution Demo on '{env_to_run}' (Seed {eff_seed}):"
         )
         print(format_live_comparison_table(live_results, as_markdown=as_markdown))
         print("\nMeasurement Integrity Insights:")
@@ -513,7 +528,7 @@ def run_demo(
         return 0
 
     print(format_side_by_side_table(summary, as_markdown=as_markdown))
-    print("\nKey Measurement Integrity Invariants (v0.5.0):")
+    print("\nKey Measurement Integrity Invariants (v0.5.1):")
     print(
         "  1. Strict Zero-Credit Floor: No-op and read-only inspection score 0.0000 across all 10 environments."
     )
@@ -550,8 +565,8 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--seed",
         type=int,
-        default=42,
-        help="Deterministic seed for live execution (default: 42)",
+        default=None,
+        help="Deterministic seed for live execution (defaults to canonical seed for target environment)",
     )
     parser.add_argument(
         "--json",

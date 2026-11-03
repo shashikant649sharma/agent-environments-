@@ -157,7 +157,6 @@ def run_golden_path(
         else:
             env.set_transaction_isolation("SERIALIZABLE")
             env.advance_incident_turn()
-            env.advance_incident_turn()
             env.respond_to_pushback(
                 response="Holding SERIALIZABLE: ledger reconciliation shows zero duplicate debits.",
                 citations=["ledger_audit_sha256"],

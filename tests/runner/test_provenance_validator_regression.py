@@ -139,3 +139,57 @@ def test_clean_commit_fails_on_wrapper_mismatch(tmp_path: Path) -> None:
         "recorded gymnasium_wrapper_sha256" in pr and "does not match commit" in pr
         for pr in problems
     )
+
+
+def test_provenance_full_git_clone_executes(tmp_path: Path, monkeypatch) -> None:
+    """Under full git clone, provenance cross-checks against actual commits execute."""
+    import tools.verify_results_provenance as prov_mod
+
+    monkeypatch.setattr(prov_mod, "get_git_repo_state", lambda: "full")
+    doc = [
+        _create_minimal_run_record(
+            "nonexistentcommit1234567890abcdef12345678",
+            "a" * 64,
+            "b" * 64,
+        )
+    ]
+    p = tmp_path / "full_clone.json"
+    p.write_text(json.dumps(doc), encoding="utf-8")
+    problems = check_document(p, require_harness_hashes=True)
+    assert any("cannot be resolved in git repository" in pr for pr in problems)
+
+
+def test_provenance_shallow_clone_explicit_handling(tmp_path: Path, monkeypatch) -> None:
+    """Under shallow clone, unresolvable commits explicitly report history truncation."""
+    import tools.verify_results_provenance as prov_mod
+
+    monkeypatch.setattr(prov_mod, "get_git_repo_state", lambda: "shallow")
+    doc = [
+        _create_minimal_run_record(
+            "nonexistentcommit1234567890abcdef12345678",
+            "a" * 64,
+            "b" * 64,
+        )
+    ]
+    p = tmp_path / "shallow_clone.json"
+    p.write_text(json.dumps(doc), encoding="utf-8")
+    problems = check_document(p, require_harness_hashes=True)
+    assert any("shallow clone (history truncated)" in pr for pr in problems)
+
+
+def test_provenance_github_zip_without_git_no_false_failure(tmp_path: Path, monkeypatch) -> None:
+    """When git metadata is unavailable (e.g. downloaded ZIP), no false test failure occurs."""
+    import tools.verify_results_provenance as prov_mod
+
+    monkeypatch.setattr(prov_mod, "get_git_repo_state", lambda: "unavailable")
+    doc = [
+        _create_minimal_run_record(
+            "anycommit1234567890abcdef1234567890abcdef",
+            "a" * 64,
+            "b" * 64,
+        )
+    ]
+    p = tmp_path / "zip_release.json"
+    p.write_text(json.dumps(doc), encoding="utf-8")
+    problems = check_document(p, require_harness_hashes=True)
+    assert problems == []

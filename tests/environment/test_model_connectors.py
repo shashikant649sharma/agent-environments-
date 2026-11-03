@@ -153,7 +153,7 @@ def test_openai_provider_routing(monkeypatch):
     assert "OPENAI_API_KEY" in resp.error_message
 
 
-def test_hackathon_comparison_real_inference_isolation():
+def test_hackathon_comparison_real_inference_isolation(monkeypatch):
     """Verify run_hackathon_model_comparison executes real inference or explicit oracle control."""
     from run_hackathon_model_comparison import evaluate_model_on_env
 
@@ -167,6 +167,9 @@ def test_hackathon_comparison_real_inference_isolation():
     assert "Reference oracle control policy" in oracle_res["note"]
 
     # 2. Frontier model requires valid provider credentials and does NOT secretly run the oracle script
+    monkeypatch.delenv("BASETEN_API_KEY", raising=False)
+    monkeypatch.delenv("META_API_KEY", raising=False)
+    monkeypatch.delenv("LLAMA_API_KEY", raising=False)
     frontier_res = evaluate_model_on_env(
         "meta/muse-spark-open", "othello", seed=20261115, is_oracle_control=False
     )

@@ -30,7 +30,7 @@
   > 
   > But real-world engineering is rarely that clean. Production incidents involve hard resource limits where sacrifices must be made, irreversible hardware failures where recovery is mathematically impossible, and authority pressure that tests epistemic conviction.
   > 
-  > Welcome to **Agent Praxis v0.4**: expanding our benchmark from 6 to 10 environments designed specifically to evaluate what agents actually do — not what they say they did."
+  > Welcome to **Agent Praxis v0.5.1**: expanding our benchmark from 6 to 10 environments designed specifically to evaluate what agents actually do — not what they say they did."
 
 ---
 

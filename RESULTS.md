@@ -1,10 +1,10 @@
-# Agent Praxis v0.5.0 Benchmark Results & Statistical Evaluation
+# Agent Praxis v0.5.1 Benchmark Results & Statistical Evaluation
 
-**Release:** v0.5.0  
-**Date:** 2026-10-29  
+**Release:** v0.5.1  
+**Date:** 2026-11-03  
 **Milestone:** Measurement Integrity & Adversarial Validity  
 **Generating Commit:** `da17b0b`  
-**Test Suite Status:** 1,013 passed (100% green, 0 skipped)  
+**Test Suite Status:** 1,047 passed (100% green, 1 skipped)  
 
 ---
 

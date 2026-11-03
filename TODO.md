@@ -290,3 +290,11 @@
   - Aligned 15% rubric dimension documentation to **Diagnostic Procedure / Informed Resolution**.
   - Documented pre-fix harness baseline provenance disclaimer in README.md and RESULTS.md.
   - Expanded test suite to **1,015 passed tests** (100% green).
+- **2026-11-03 23:00:** **v0.5.1 README Overhaul & Research Presentation Completed:**
+  - Unified canonical golden path implementations in `agent_praxis/framework/evaluation/golden.py`, refactored `run_10_environments_benchmark.py`, and resolved Othello incident-turn advancement bug (restoring verified 1.0000 reference score).
+  - Hardened Git provenance validator against shallow clones and Git-less zip archives in `tools/verify_results_provenance.py`.
+  - Added regression tests in `tests/runner/test_provenance_validator_regression.py`.
+  - Built reproducible data extraction and figure pipeline (`tools/readme_results/`, `tools/generate_readme_assets.py`).
+  - Integrated 9 production visual assets across README with responsive diagrams.
+  - Added automated validator `tools/validate_readme.py` verifying links, figures, versions, and CLI examples.
+

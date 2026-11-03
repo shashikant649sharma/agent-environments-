@@ -1280,7 +1280,8 @@ def main() -> None:
     if getattr(args, "monitor", False):
         from agent_praxis.commands.monitor import run_monitor_from_benchmark_args
 
-        return run_monitor_from_benchmark_args(args)
+        run_monitor_from_benchmark_args(args)
+        return
 
     commit_sha = _repo_commit_sha()
     if commit_sha.endswith("-dirty"):

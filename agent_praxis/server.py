@@ -555,7 +555,7 @@ def _safe_acknowledgement(session_id: str, run_result: Any) -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn  # type: ignore[import-not-found,import-untyped]
 
     port = int(os.environ.get("PORT", "8000"))
     uvicorn.run(app, host="0.0.0.0", port=port)

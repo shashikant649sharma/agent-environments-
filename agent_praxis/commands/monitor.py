@@ -60,10 +60,10 @@ for _env_path in _env_candidates:
                     if _env_k and not os.environ.get(_env_k):
                         os.environ[_env_k] = _env_v
 
-from rich.console import Console, Group  # noqa: E402
-from rich.panel import Panel  # noqa: E402
-from rich.table import Table  # noqa: E402
-from rich.text import Text  # noqa: E402
+from rich.console import Console, Group  # type: ignore[import-not-found,import-untyped] # noqa: E402
+from rich.panel import Panel  # type: ignore[import-not-found,import-untyped] # noqa: E402
+from rich.table import Table  # type: ignore[import-not-found,import-untyped] # noqa: E402
+from rich.text import Text  # type: ignore[import-not-found,import-untyped] # noqa: E402
 
 ALL_10_ENVIRONMENTS: list[str] = [
     "dorian-gray",
@@ -689,7 +689,7 @@ class ConsoleMonitor:
 
     def run(self) -> list[dict[str, Any]]:
         """Run the multi-environment benchmark with real-time monitoring."""
-        from rich.live import Live
+        from rich.live import Live  # type: ignore[import-not-found,import-untyped]
 
         from benchmark_models import (
             DEFAULT_SEED_MAP,
@@ -922,6 +922,16 @@ class ConsoleMonitor:
         return self.all_summaries
 
 
+def _resolve_seed_count(args: Any, default: int = 1) -> int:
+    cycles_val = getattr(args, "cycles", None)
+    if cycles_val is not None:
+        return int(cycles_val)
+    seeds_val = getattr(args, "num_seeds", None)
+    if seeds_val is not None:
+        return int(seeds_val)
+    return default
+
+
 def run_monitor_from_benchmark_args(args: argparse.Namespace) -> int:
     """Bridge runner for benchmark_models.py --monitor."""
     from benchmark_models import ALL_MODELS, MOCK_MODELS
@@ -953,15 +963,19 @@ def run_monitor_from_benchmark_args(args: argparse.Namespace) -> int:
     if resolved_seeds:
         num_s = len(resolved_seeds)
     elif getattr(args, "matched_seeds", False):
-        num_s = getattr(args, "cycles", None) or getattr(args, "num_seeds", 30)
+        num_s = _resolve_seed_count(args, default=30)
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     elif getattr(args, "finals", False):
-        num_s = getattr(args, "cycles", None) or (
-            args.num_seeds if getattr(args, "num_seeds", 1) > 1 else 30
+        cycles_v = getattr(args, "cycles", None)
+        seeds_v = getattr(args, "num_seeds", 1)
+        num_s = (
+            int(cycles_v)
+            if cycles_v is not None
+            else (int(seeds_v) if int(seeds_v or 1) > 1 else 30)
         )
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     else:
-        num_s = getattr(args, "num_seeds", 1)
+        num_s = int(getattr(args, "num_seeds", 1) or 1)
 
     monitor = ConsoleMonitor(
         models=models,
@@ -1023,15 +1037,19 @@ def main_args(args: argparse.Namespace) -> int:
     if resolved_seeds:
         num_s = len(resolved_seeds)
     elif getattr(args, "matched_seeds", False):
-        num_s = getattr(args, "cycles", None) or getattr(args, "num_seeds", 30)
+        num_s = _resolve_seed_count(args, default=30)
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     elif getattr(args, "finals", False):
-        num_s = getattr(args, "cycles", None) or (
-            args.num_seeds if getattr(args, "num_seeds", 1) > 1 else 30
+        cycles_v = getattr(args, "cycles", None)
+        seeds_v = getattr(args, "num_seeds", 1)
+        num_s = (
+            int(cycles_v)
+            if cycles_v is not None
+            else (int(seeds_v) if int(seeds_v or 1) > 1 else 30)
         )
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     else:
-        num_s = getattr(args, "num_seeds", 1)
+        num_s = int(getattr(args, "num_seeds", 1) or 1)
 
     monitor = ConsoleMonitor(
         models=models,

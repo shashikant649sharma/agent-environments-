@@ -21,8 +21,7 @@ import logging
 from datetime import UTC, datetime
 from typing import Any
 
-from agent_praxis.framework.evaluation.schema import RunResult, make_run_result
-from agent_praxis.server import _ENV_FACTORIES
+from agent_praxis.framework.evaluation.golden import run_golden_path
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("agent_praxis.benchmark_10")
@@ -109,9 +108,6 @@ ALL_ENVIRONMENTS = [
         "category": "new",
     },
 ]
-
-
-from agent_praxis.framework.evaluation.golden import run_golden_path
 
 
 def run_benchmark(target_env: str = "all", variant: str = "standard") -> dict[str, Any]:

@@ -343,7 +343,7 @@ class ConsoleMonitor:
             if p_tok > 0 or c_tok > 0:
                 self.input_tokens += p_tok
                 self.output_tokens += c_tok
-                self.total_tokens += (p_tok + c_tok)
+                self.total_tokens += p_tok + c_tok
             elif "tokens" in entry_data and isinstance(entry_data["tokens"], int):
                 self.total_tokens += entry_data["tokens"]
 
@@ -351,7 +351,9 @@ class ConsoleMonitor:
                 self.tokens_measured = True
                 self.token_source = "reported"
             elif "token_source" in entry_data:
-                self.token_source = "reported" if entry_data["token_source"] == "provider_reported" else "estimated"
+                self.token_source = (
+                    "reported" if entry_data["token_source"] == "provider_reported" else "estimated"
+                )
 
         # Non-TUI fallback streaming print
         if not self.use_tui:
@@ -422,7 +424,9 @@ class ConsoleMonitor:
         env_disp = format_env_name(self.current_env)
         seed_disp = str(self.current_seed)
         env_prog_disp = f"{env_disp} · Env {self.current_env_idx:02d}/{self.total_envs:02d}"
-        run_info_disp = f"Seed {seed_disp} · Episode {self.current_run_idx:02d}/{self.total_runs:02d}"
+        run_info_disp = (
+            f"Seed {seed_disp} · Episode {self.current_run_idx:02d}/{self.total_runs:02d}"
+        )
 
         meta_tbl.add_row(
             Text.from_markup(
@@ -499,7 +503,11 @@ class ConsoleMonitor:
 
         # Multi-Segment Progress Bar (Cyan = Completed, Amber = In-Flight, Dark = Pending)
         bar_len = max(24, width - 8)
-        comp_bars = int(round(self.completed_runs / self.total_runs * bar_len)) if self.total_runs > 0 else 0
+        comp_bars = (
+            int(round(self.completed_runs / self.total_runs * bar_len))
+            if self.total_runs > 0
+            else 0
+        )
         run_bars = int(round(running_cnt / self.total_runs * bar_len)) if self.total_runs > 0 else 0
         if running_cnt > 0 and run_bars == 0 and comp_bars < bar_len:
             run_bars = 1
@@ -523,7 +531,9 @@ class ConsoleMonitor:
         filter_lbl = f"Filter: [bold white]{self.current_filter_name}[/bold white]"
         stream_header.add_row(
             Text.from_markup("[bold white]EXECUTION STREAM[/bold white]"),
-            Text.from_markup(f"[bold #00E676 on #002B18] LIVE [/]  [dim #90A4AE]{filter_lbl}[/dim #90A4AE]"),
+            Text.from_markup(
+                f"[bold #00E676 on #002B18] LIVE [/]  [dim #90A4AE]{filter_lbl}[/dim #90A4AE]"
+            ),
         )
 
         # Filter events according to active mode
@@ -531,9 +541,13 @@ class ConsoleMonitor:
             all_evts = list(self.events)
 
         if self.current_filter_name == "MILESTONES":
-            filtered_evts = [e for e in all_evts if e["tag"] in ("AGENT", "RESULT", "WARN", "ERROR")]
+            filtered_evts = [
+                e for e in all_evts if e["tag"] in ("AGENT", "RESULT", "WARN", "ERROR")
+            ]
         elif self.current_filter_name == "MODEL & AGENT":
-            filtered_evts = [e for e in all_evts if e["tag"] in ("MODEL", "AGENT", "RESULT", "ERROR")]
+            filtered_evts = [
+                e for e in all_evts if e["tag"] in ("MODEL", "AGENT", "RESULT", "ERROR")
+            ]
         elif self.current_filter_name == "ERRORS":
             filtered_evts = [e for e in all_evts if e["tag"] in ("WARN", "ERROR")]
         else:
@@ -541,7 +555,9 @@ class ConsoleMonitor:
 
         # Display window dynamically sized based on terminal height to prevent screen scrolling
         max_log_lines = max(4, min(10, term_height - 18))
-        recent_evts = filtered_evts[-max_log_lines:] if len(filtered_evts) > max_log_lines else filtered_evts
+        recent_evts = (
+            filtered_evts[-max_log_lines:] if len(filtered_evts) > max_log_lines else filtered_evts
+        )
 
         tag_styles = {
             "INFO": "bold #00E5FF",
@@ -590,7 +606,9 @@ class ConsoleMonitor:
 
         # Status cursor line
         stream_lines.append(
-            Text.from_markup("[bold #00E5FF]▌[/bold #00E5FF] [dim #90A4AE]Awaiting next event...[/dim #90A4AE]")
+            Text.from_markup(
+                "[bold #00E5FF]▌[/bold #00E5FF] [dim #90A4AE]Awaiting next event...[/dim #90A4AE]"
+            )
         )
 
         stream_panel = Panel(
@@ -623,9 +641,15 @@ class ConsoleMonitor:
         footer_tbl.add_column(width=14)
         footer_tbl.add_column(ratio=1)
         footer_tbl.add_row(
-            Text.from_markup(f"[dim #90A4AE]ELAPSED[/dim #90A4AE]\n[bold white]{elapsed_str}[/bold white]"),
-            Text.from_markup(f"[dim #90A4AE]LATENCY[/dim #90A4AE]\n[bold white]{latency_str}[/bold white]"),
-            Text.from_markup(f"[dim #90A4AE]TOKENS [{source_label}][/dim #90A4AE]\n[bold white]{token_val_str}[/bold white]"),
+            Text.from_markup(
+                f"[dim #90A4AE]ELAPSED[/dim #90A4AE]\n[bold white]{elapsed_str}[/bold white]"
+            ),
+            Text.from_markup(
+                f"[dim #90A4AE]LATENCY[/dim #90A4AE]\n[bold white]{latency_str}[/bold white]"
+            ),
+            Text.from_markup(
+                f"[dim #90A4AE]TOKENS [{source_label}][/dim #90A4AE]\n[bold white]{token_val_str}[/bold white]"
+            ),
         )
 
         # 7. Shortcuts Bar
@@ -735,12 +759,16 @@ class ConsoleMonitor:
                         def on_seed_start(seed_val: int, run_idx: int, total_s: int) -> None:
                             self.current_seed = seed_val
                             self.current_run_idx += 1
-                            self.seed_run_str = f"Run {self.current_run_idx:02d}/{self.total_runs:02d}"
+                            self.seed_run_str = (
+                                f"Run {self.current_run_idx:02d}/{self.total_runs:02d}"
+                            )
                             self.evaluator_state = "RUNNING INVESTIGATION"
 
                         def on_seed_finish(run_res: dict[str, Any]) -> None:
                             self.completed_runs += 1
-                            outc = run_res.get("outcome") or ("SOLVED" if run_res.get("task_success") else "FAILED")
+                            outc = run_res.get("outcome") or (
+                                "SOLVED" if run_res.get("task_success") else "FAILED"
+                            )
                             self.current_outcome = outc
                             self.evaluator_state = f"OUTCOME: {outc}"
 
@@ -782,7 +810,9 @@ class ConsoleMonitor:
 
                         # Save intermediate progress
                         with contextlib.suppress(Exception):
-                            os.makedirs(os.path.dirname(os.path.abspath(self.output_path)), exist_ok=True)
+                            os.makedirs(
+                                os.path.dirname(os.path.abspath(self.output_path)), exist_ok=True
+                            )
                             with open(self.output_path, "w", encoding="utf-8") as f:
                                 json.dump(self.all_summaries, f, indent=2)
 
@@ -873,7 +903,9 @@ class ConsoleMonitor:
             )
 
         self.console.print(summary_table)
-        self.console.print(f"[dim]Results saved to [bold white]{self.output_path}[/bold white].[/dim]\n")
+        self.console.print(
+            f"[dim]Results saved to [bold white]{self.output_path}[/bold white].[/dim]\n"
+        )
 
         # Official Agent Praxis Research Evaluation Summary
         research_panel = render_final_research_summary(
@@ -881,7 +913,9 @@ class ConsoleMonitor:
             total_models=len(self.models),
             total_envs=len(self.environments),
             total_seeds=self.num_seeds,
-            status_str="EVALUATION COMPLETED · REPRODUCIBLE SCIENTIFIC RECORD" if not (self.stop_requested or self.quit_requested) else "EXECUTION INTERRUPTED",
+            status_str="EVALUATION COMPLETED · REPRODUCIBLE SCIENTIFIC RECORD"
+            if not (self.stop_requested or self.quit_requested)
+            else "EXECUTION INTERRUPTED",
         )
         self.console.print(research_panel)
 
@@ -894,14 +928,19 @@ def run_monitor_from_benchmark_args(args: argparse.Namespace) -> int:
 
     models: list[str] | None = None
     from benchmark_models import FINAL_MATCHED_SEEDS, FINALS_MODELS, REFERENCE_CONTROL_MODELS
+
     mode = getattr(args, "mode", "standard").lower()
     if mode == "controls":
         models = REFERENCE_CONTROL_MODELS
-    elif getattr(args, "finals", False) or (getattr(args, "models", None) and args.models == ["finals"]):
+    elif getattr(args, "finals", False) or (
+        getattr(args, "models", None) and args.models == ["finals"]
+    ):
         models = FINALS_MODELS
     elif getattr(args, "all", False):
         models = ALL_MODELS
-    elif getattr(args, "provider", "auto") in ("mock", "offline") and not getattr(args, "models", None):
+    elif getattr(args, "provider", "auto") in ("mock", "offline") and not getattr(
+        args, "models", None
+    ):
         models = MOCK_MODELS
     elif getattr(args, "models", None):
         models = args.models
@@ -917,7 +956,9 @@ def run_monitor_from_benchmark_args(args: argparse.Namespace) -> int:
         num_s = getattr(args, "cycles", None) or getattr(args, "num_seeds", 30)
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     elif getattr(args, "finals", False):
-        num_s = getattr(args, "cycles", None) or (args.num_seeds if getattr(args, "num_seeds", 1) > 1 else 30)
+        num_s = getattr(args, "cycles", None) or (
+            args.num_seeds if getattr(args, "num_seeds", 1) > 1 else 30
+        )
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     else:
         num_s = getattr(args, "num_seeds", 1)
@@ -949,7 +990,9 @@ def run_monitor_from_benchmark_args(args: argparse.Namespace) -> int:
             or os.environ.get("MODAL_TOKEN")
             or (
                 f"{getattr(args, 'modal_key', None) or os.environ.get('MODAL_KEY', '')}."
-                f"{getattr(args, 'modal_secret', None) or os.environ.get('MODAL_SECRET', '')}".strip(".")
+                f"{getattr(args, 'modal_secret', None) or os.environ.get('MODAL_SECRET', '')}".strip(
+                    "."
+                )
             )
         ),
         modal_api_url=getattr(args, "modal_api_url", None),
@@ -961,6 +1004,7 @@ def run_monitor_from_benchmark_args(args: argparse.Namespace) -> int:
 def main_args(args: argparse.Namespace) -> int:
     """Entry point for 'praxis monitor'."""
     from benchmark_models import FINAL_MATCHED_SEEDS, FINALS_MODELS, REFERENCE_CONTROL_MODELS
+
     mode = getattr(args, "mode", "standard").lower()
     if mode == "controls":
         models = REFERENCE_CONTROL_MODELS
@@ -982,7 +1026,9 @@ def main_args(args: argparse.Namespace) -> int:
         num_s = getattr(args, "cycles", None) or getattr(args, "num_seeds", 30)
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     elif getattr(args, "finals", False):
-        num_s = getattr(args, "cycles", None) or (args.num_seeds if getattr(args, "num_seeds", 1) > 1 else 30)
+        num_s = getattr(args, "cycles", None) or (
+            args.num_seeds if getattr(args, "num_seeds", 1) > 1 else 30
+        )
         resolved_seeds = FINAL_MATCHED_SEEDS[:num_s]
     else:
         num_s = getattr(args, "num_seeds", 1)
@@ -1014,7 +1060,9 @@ def main_args(args: argparse.Namespace) -> int:
             or os.environ.get("MODAL_TOKEN")
             or (
                 f"{getattr(args, 'modal_key', None) or os.environ.get('MODAL_KEY', '')}."
-                f"{getattr(args, 'modal_secret', None) or os.environ.get('MODAL_SECRET', '')}".strip(".")
+                f"{getattr(args, 'modal_secret', None) or os.environ.get('MODAL_SECRET', '')}".strip(
+                    "."
+                )
             )
         ),
         modal_api_url=getattr(args, "modal_api_url", None),
@@ -1119,9 +1167,9 @@ def render_final_research_summary(
             sc = float(r.get("score", 0.0) or 0.0)
             all_scores.append(sc)
             model_scores.setdefault(mod, []).append(sc)
-            if (
-                r.get("error_kind") in ("infra_error", "provider_error")
-                or r.get("outcome") in ("INFRA ERROR", "INFRA_ERROR")
+            if r.get("error_kind") in ("infra_error", "provider_error") or r.get("outcome") in (
+                "INFRA ERROR",
+                "INFRA_ERROR",
             ):
                 infra_errors += 1
 
@@ -1140,7 +1188,13 @@ def render_final_research_summary(
     # Header
     hdr = Table.grid(expand=True)
     hdr.add_column(ratio=1)
-    hdr.add_row(Text("AGENT PRAXIS                 FINAL RESEARCH EVALUATION", style="bold #00E5FF", justify="center"))
+    hdr.add_row(
+        Text(
+            "AGENT PRAXIS                 FINAL RESEARCH EVALUATION",
+            style="bold #00E5FF",
+            justify="center",
+        )
+    )
     lines.append(Text(""))
 
     # Parameters grid
@@ -1165,27 +1219,57 @@ def render_final_research_summary(
         Text("EPISODES", style="dim #90A4AE"),
         Text(f"{total_target_episodes}", style="bold white"),
         Text("COMPLETED", style="dim #90A4AE"),
-        Text(f"{completed_episodes}", style="bold #00E676" if completed_episodes == total_target_episodes else "bold #FFB300"),
+        Text(
+            f"{completed_episodes}",
+            style="bold #00E676" if completed_episodes == total_target_episodes else "bold #FFB300",
+        ),
     )
 
     # Modes block
     m_tbl = Table.grid(expand=True)
     m_tbl.add_column(ratio=1)
     m_tbl.add_row(Text("[bold #00E5FF]EXPERIMENTAL MODES[/bold #00E5FF]"))
-    m_tbl.add_row(Text("[✓] STANDARD EVALUATION (Primary Leaderboard: 4,500 Episodes)", style="bold white"))
-    m_tbl.add_row(Text("[✓] REFERENCE CONTROLS (Calibration Baselines: Oracle / Decoy / Random)", style="bold #38BDF8"))
-    m_tbl.add_row(Text("[✓] ROBUSTNESS / ABLATION (Adversarial Variants: Strict / Deception)", style="dim #90A4AE"))
+    m_tbl.add_row(
+        Text("[✓] STANDARD EVALUATION (Primary Leaderboard: 4,500 Episodes)", style="bold white")
+    )
+    m_tbl.add_row(
+        Text(
+            "[✓] REFERENCE CONTROLS (Calibration Baselines: Oracle / Decoy / Random)",
+            style="bold #38BDF8",
+        )
+    )
+    m_tbl.add_row(
+        Text(
+            "[✓] ROBUSTNESS / ABLATION (Adversarial Variants: Strict / Deception)",
+            style="dim #90A4AE",
+        )
+    )
 
     # Results block
     r_tbl = Table.grid(expand=True)
     r_tbl.add_column(width=28)
     r_tbl.add_column(ratio=1)
-    r_tbl.add_row(Text("[bold #00E5FF]PRIMARY RESULTS[/bold #00E5FF]", style="bold #00E5FF"), Text(""))
-    r_tbl.add_row(Text("Overall performance", style="dim #90A4AE"), Text(overall_perf, style="bold #00E676"))
-    r_tbl.add_row(Text("Best performing model", style="dim #90A4AE"), Text(best_perf_str, style="bold #38BDF8"))
-    r_tbl.add_row(Text("Lowest performing model", style="dim #90A4AE"), Text(worst_perf_str, style="white"))
-    r_tbl.add_row(Text("Infrastructure failures", style="dim #90A4AE"), Text(str(infra_errors), style="bold #00E676" if infra_errors == 0 else "bold #FF5252"))
-    r_tbl.add_row(Text("Evaluator verification", style="dim #90A4AE"), Text("PASS (Frozen 40/30/15/10/5 Multi-Rubric)", style="bold #00E676"))
+    r_tbl.add_row(
+        Text("[bold #00E5FF]PRIMARY RESULTS[/bold #00E5FF]", style="bold #00E5FF"), Text("")
+    )
+    r_tbl.add_row(
+        Text("Overall performance", style="dim #90A4AE"), Text(overall_perf, style="bold #00E676")
+    )
+    r_tbl.add_row(
+        Text("Best performing model", style="dim #90A4AE"),
+        Text(best_perf_str, style="bold #38BDF8"),
+    )
+    r_tbl.add_row(
+        Text("Lowest performing model", style="dim #90A4AE"), Text(worst_perf_str, style="white")
+    )
+    r_tbl.add_row(
+        Text("Infrastructure failures", style="dim #90A4AE"),
+        Text(str(infra_errors), style="bold #00E676" if infra_errors == 0 else "bold #FF5252"),
+    )
+    r_tbl.add_row(
+        Text("Evaluator verification", style="dim #90A4AE"),
+        Text("PASS (Frozen 40/30/15/10/5 Multi-Rubric)", style="bold #00E676"),
+    )
 
     status_color = "#00E676" if "COMPLETED" in status_str else "#FFB300"
     status_text = Text(f"STATUS: {status_str}", style=f"bold {status_color}", justify="center")

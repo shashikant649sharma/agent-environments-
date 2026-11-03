@@ -144,7 +144,6 @@ def resolve_modal_endpoint(model: str) -> tuple[str, str] | None:
     return None
 
 
-
 class ActionOutcomeKind(StrEnum):
     """Mutually exclusive classification of a model turn's outcome."""
 
@@ -2059,7 +2058,11 @@ def query_provider_action(
             limits=limits,
         )
 
-    if prov == "meta" or (prov == "auto" and ("meta" in model.lower() or "llama" in model.lower()) and not ("llama3" in model.lower() and ":" in model)):
+    if prov == "meta" or (
+        prov == "auto"
+        and ("meta" in model.lower() or "llama" in model.lower())
+        and not ("llama3" in model.lower() and ":" in model)
+    ):
         key = meta_api_key or os.environ.get("META_API_KEY", os.environ.get("LLAMA_API_KEY", ""))
         if not key:
             if "muse" in model.lower():
@@ -2091,14 +2094,14 @@ def query_provider_action(
             limits=limits,
         )
 
-    is_groq_model = (
-        "groq" in model.lower()
-        or model in ("openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen-2.5-32b", "meta-llama/Llama-3.3-70B-Instruct")
+    is_groq_model = "groq" in model.lower() or model in (
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "qwen/qwen-2.5-32b",
+        "meta-llama/Llama-3.3-70B-Instruct",
     )
     if prov == "groq" or (
-        prov == "auto"
-        and is_groq_model
-        and (groq_api_key or os.environ.get("GROQ_API_KEY"))
+        prov == "auto" and is_groq_model and (groq_api_key or os.environ.get("GROQ_API_KEY"))
     ):
         key = groq_api_key or os.environ.get("GROQ_API_KEY", "")
         if not key:

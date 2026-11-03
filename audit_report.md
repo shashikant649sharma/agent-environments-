@@ -202,7 +202,7 @@ The 6 "compliant" episodes include environments where the agent **never attempte
 
 **Finding:**  
 ```python
-constraint_compliance: bool = True   # Default is True
+constraint_compliance: bool = True  # Default is True
 ```
 
 If an episode fails before evaluation (provider error, parse failure), `constraint_compliance` is `True` by default. Failed episodes should not report as compliant — this artificially inflates compliance rates in aggregates.
@@ -230,14 +230,22 @@ variant: Literal["standard", "control"]
 
 But `variants.py` defines 5 supported variants:
 ```python
-SUPPORTED_VARIANTS = ["standard", "high_deception", "strict_compliance", "randomized_invariants", "control"]
+SUPPORTED_VARIANTS = [
+    "standard",
+    "high_deception",
+    "strict_compliance",
+    "randomized_invariants",
+    "control",
+]
 ```
 
 `the-trial` supports `high_deception`, `strict_compliance`, and `randomized_invariants`, but these cannot be expressed in `EpisodeSpec`. Multi-seed runs with these variants would fail schema validation.
 
 **Suggested Fix:**
 ```python
-variant: Literal["standard", "high_deception", "strict_compliance", "randomized_invariants", "control"]
+variant: Literal[
+    "standard", "high_deception", "strict_compliance", "randomized_invariants", "control"
+]
 ```
 
 ---

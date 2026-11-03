@@ -296,7 +296,11 @@ def is_groq_model(model: str, provider: str = "auto") -> bool:
     if provider in ("ollama", "meta", "modal"):
         return False
     resolved = resolve_model_alias(model)
-    if resolved in MODAL_MODELS or model in MODAL_MODELS or resolve_modal_endpoint(model) is not None:
+    if (
+        resolved in MODAL_MODELS
+        or model in MODAL_MODELS
+        or resolve_modal_endpoint(model) is not None
+    ):
         return False
     if is_meta_model(model, provider=provider):
         return False
@@ -314,7 +318,12 @@ def _effective_provider(model: str, provider: str = "auto") -> str:
         return "openai"
 
     resolved = resolve_model_alias(model)
-    if prov == "modal" or resolved in MODAL_MODELS or model in MODAL_MODELS or resolve_modal_endpoint(model) is not None:
+    if (
+        prov == "modal"
+        or resolved in MODAL_MODELS
+        or model in MODAL_MODELS
+        or resolve_modal_endpoint(model) is not None
+    ):
         return "modal"
 
     if os.environ.get("BASETEN_API_KEY") and (
@@ -325,10 +334,7 @@ def _effective_provider(model: str, provider: str = "auto") -> str:
     ):
         return "baseten"
 
-    if os.environ.get("OPENAI_API_KEY") and (
-        model.startswith("gpt-")
-        or "openai" in model.lower()
-    ):
+    if os.environ.get("OPENAI_API_KEY") and (model.startswith("gpt-") or "openai" in model.lower()):
         return "openai"
 
     if is_meta_model(model, provider=provider):
@@ -638,7 +644,11 @@ def evaluate_single_run(
                 "context_overflow",
                 "Mandatory prompt content exceeded context budget",
             )
-            emit("ERROR", f"Step {step_num + 1} {error_kind}: {error_message}", {"error": error_message, "error_kind": error_kind})
+            emit(
+                "ERROR",
+                f"Step {step_num + 1} {error_kind}: {error_message}",
+                {"error": error_message, "error_kind": error_kind},
+            )
             log_print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}")
             return _result(
                 duration_seconds=round(time.time() - start_time, 2),
@@ -733,7 +743,9 @@ def evaluate_single_run(
         p_tokens = getattr(turn_usage, "prompt_tokens", 0) or 0
         c_tokens = getattr(turn_usage, "completion_tokens", 0) or 0
         is_meas = getattr(turn_usage, "is_measured", False)
-        t_src = getattr(turn_usage, "source", "provider_reported" if is_meas else "heuristic_estimated")
+        t_src = getattr(
+            turn_usage, "source", "provider_reported" if is_meas else "heuristic_estimated"
+        )
 
         emit(
             "MODEL",
@@ -759,15 +771,28 @@ def evaluate_single_run(
                 error_kind, error_message = "provider_error", provider_error
                 outcome = "INFRA ERROR"
             elif turn_resp.outcome_kind == ActionOutcomeKind.CONTEXT_OVERFLOW:
-                error_kind, error_message = "context_overflow", turn_resp.error_message or "context overflow"
+                error_kind, error_message = (
+                    "context_overflow",
+                    turn_resp.error_message or "context overflow",
+                )
                 outcome = "INVALID"
             else:
-                error_kind, error_message = "parse_failure", turn_resp.error_message or "unparseable model response"
+                error_kind, error_message = (
+                    "parse_failure",
+                    turn_resp.error_message or "unparseable model response",
+                )
                 outcome = "INVALID"
             emit(
                 "ERROR",
                 f"Step {step_num + 1} {error_kind}: {error_message} · {outcome}",
-                {"error": error_message, "error_kind": error_kind, "outcome": outcome, "step": step_num + 1, "max_steps": max_steps, "evaluator_state": f"ERROR ({outcome})"},
+                {
+                    "error": error_message,
+                    "error_kind": error_kind,
+                    "outcome": outcome,
+                    "step": step_num + 1,
+                    "max_steps": max_steps,
+                    "evaluator_state": f"ERROR ({outcome})",
+                },
             )
             log_print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}")
             return _result(
@@ -783,7 +808,14 @@ def evaluate_single_run(
             emit(
                 "ERROR",
                 f"Step {step_num + 1} {error_kind}: {error_message} · {outcome}",
-                {"error": error_message, "error_kind": error_kind, "outcome": outcome, "step": step_num + 1, "max_steps": max_steps, "evaluator_state": f"ERROR ({outcome})"},
+                {
+                    "error": error_message,
+                    "error_kind": error_kind,
+                    "outcome": outcome,
+                    "step": step_num + 1,
+                    "max_steps": max_steps,
+                    "evaluator_state": f"ERROR ({outcome})",
+                },
             )
             log_print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}")
             return _result(
@@ -797,9 +829,7 @@ def evaluate_single_run(
         command_log.append(action_name)
         action_history.append((action_idx, action_name))
 
-        log_print(
-            f"    Step {step_num + 1:2d} ({step_elapsed:.1f}s): [{action_idx}] {action_name}"
-        )
+        log_print(f"    Step {step_num + 1:2d} ({step_elapsed:.1f}s): [{action_idx}] {action_name}")
         emit(
             "RESULT",
             f"State verification passed · [{action_idx}] {action_name}",
@@ -876,7 +906,11 @@ def evaluate_single_run(
     )
 
     total_duration = round(time.time() - start_time, 2)
-    outcome = "SOLVED" if (task_success and final_reward >= 0.99) else ("SOLVED (PARTIAL)" if task_success else "FAILED")
+    outcome = (
+        "SOLVED"
+        if (task_success and final_reward >= 0.99)
+        else ("SOLVED (PARTIAL)" if task_success else "FAILED")
+    )
     emit(
         "RESULT",
         f"State verification {'passed' if task_success else 'failed'} · {outcome}",
@@ -1245,6 +1279,7 @@ def main() -> None:
 
     if getattr(args, "monitor", False):
         from agent_praxis.commands.monitor import run_monitor_from_benchmark_args
+
         return run_monitor_from_benchmark_args(args)
 
     commit_sha = _repo_commit_sha()
@@ -1273,7 +1308,11 @@ def main() -> None:
     else:
         models = ["llama3.2:3b"]
 
-    environments = ENVIRONMENTS if (getattr(args, "all_envs", False) or not args.env or args.env == "all") else [args.env]
+    environments = (
+        ENVIRONMENTS
+        if (getattr(args, "all_envs", False) or not args.env or args.env == "all")
+        else [args.env]
+    )
     groq_api_key = args.groq_api_key or os.environ.get("GROQ_API_KEY")
     meta_api_key = args.meta_api_key or os.environ.get(
         "META_API_KEY", os.environ.get("LLAMA_API_KEY")
@@ -1288,7 +1327,9 @@ def main() -> None:
         or os.environ.get("MODAL_TOKEN")
         or (
             f"{getattr(args, 'modal_key', None) or os.environ.get('MODAL_KEY', '')}."
-            f"{getattr(args, 'modal_secret', None) or os.environ.get('MODAL_SECRET', '')}".strip(".")
+            f"{getattr(args, 'modal_secret', None) or os.environ.get('MODAL_SECRET', '')}".strip(
+                "."
+            )
         )
     )
     modal_api_url = getattr(args, "modal_api_url", None)
@@ -1323,7 +1364,9 @@ def main() -> None:
                 count = getattr(args, "cycles", None) or getattr(args, "num_seeds", 30)
                 env_seeds = FINAL_MATCHED_SEEDS[:count]
             elif getattr(args, "finals", False):
-                count = getattr(args, "cycles", None) or (args.num_seeds if args.num_seeds > 1 else 30)
+                count = getattr(args, "cycles", None) or (
+                    args.num_seeds if args.num_seeds > 1 else 30
+                )
                 env_seeds = FINAL_MATCHED_SEEDS[:count]
             else:
                 from agent_praxis.framework.runner.multiseed.schemas import SeedConfig

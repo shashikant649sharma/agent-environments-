@@ -203,7 +203,13 @@ def test_monitor_infra_error_classification_and_summary() -> None:
         {
             "model": "deepseek-ai/DeepSeek-V4.1-Flash",
             "environment": "dorian-gray",
-            "stats": {"mean": 0.0, "min": 0.0, "max": 0.0, "success_rate": 0.0, "compliance_rate": 1.0},
+            "stats": {
+                "mean": 0.0,
+                "min": 0.0,
+                "max": 0.0,
+                "success_rate": 0.0,
+                "compliance_rate": 1.0,
+            },
             "runs": [
                 {
                     "seed": 1001,
@@ -218,7 +224,13 @@ def test_monitor_infra_error_classification_and_summary() -> None:
         {
             "model": "meta-models/muse-spark-open-1026",
             "environment": "catch-22",
-            "stats": {"mean": 1.0, "min": 1.0, "max": 1.0, "success_rate": 1.0, "compliance_rate": 1.0},
+            "stats": {
+                "mean": 1.0,
+                "min": 1.0,
+                "max": 1.0,
+                "success_rate": 1.0,
+                "compliance_rate": 1.0,
+            },
             "runs": [
                 {
                     "seed": 1001,
@@ -249,11 +261,14 @@ def test_monitor_infra_error_classification_and_summary() -> None:
     mon.add_event(
         "ERROR",
         "Step 1 provider_error: Gateway timeout · INFRA ERROR",
-        {"outcome": "INFRA ERROR", "error_kind": "provider_error", "evaluator_state": "ERROR (INFRA ERROR)"},
+        {
+            "outcome": "INFRA ERROR",
+            "error_kind": "provider_error",
+            "evaluator_state": "ERROR (INFRA ERROR)",
+        },
     )
     assert mon.current_outcome == "INFRA ERROR"
     assert "INFRA ERROR" in mon.evaluator_state
 
     rendered = mon.render()
     assert rendered is not None
-

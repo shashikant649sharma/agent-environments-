@@ -13,7 +13,11 @@ All 9 models in the pilot run scored exactly **`0.300`** with outcome `FAILED`.
 ### Evaluator Code Inspection (`agent_praxis/framework/evaluation/schema.py`)
 ```python
 # Evidence requirement for 1984 evaluator:
-required_evidence = {3, 4, 5} # 3: read_system_metrics, 4: read_network_stats, 5: audit_telemetry_pipeline
+required_evidence = {
+    3,
+    4,
+    5,
+}  # 3: read_system_metrics, 4: read_network_stats, 5: audit_telemetry_pipeline
 # Condition: all required evidence must be executed BEFORE action 8 (restart_upstream_service)
 ```
 

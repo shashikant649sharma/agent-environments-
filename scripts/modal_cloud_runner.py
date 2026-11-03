@@ -32,9 +32,13 @@ results_volume = modal.Volume.from_name("praxis-research-volume", create_if_miss
 def _resolve_host_git_commit() -> str:
     """Resolve current local git commit to inject into headless container."""
     try:
-        res = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+        )
         sha = res.stdout.strip()
-        status = subprocess.run(["git", "status", "--porcelain", "-uno"], capture_output=True, text=True)
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "-uno"], capture_output=True, text=True
+        )
         if status.returncode == 0 and status.stdout.strip():
             return f"{sha}-dirty"
         return sha
@@ -68,7 +72,9 @@ benchmark_image = (
     cpu=2.0,
     memory=2048,
 )
-def run_cloud_benchmark(cycles: int = 5, env: str = "", model: str = "", output_name: str = "") -> int:
+def run_cloud_benchmark(
+    cycles: int = 5, env: str = "", model: str = "", output_name: str = ""
+) -> int:
     """Execute the benchmark in Modal cloud with persistent volume storage."""
     print(f"=== Starting Agent Praxis Cloud Benchmark on Modal ({cycles} cycles) ===", flush=True)
     os.chdir("/root")
@@ -95,10 +101,12 @@ def run_cloud_benchmark(cycles: int = 5, env: str = "", model: str = "", output_
         "/root/benchmark_models.py",
         "--matched-seeds",
         "--interleaved",
-        "--cycles", str(cycles),
+        "--cycles",
+        str(cycles),
         "--monitor",
         "--no-tui",
-        "--output", str(output_json),
+        "--output",
+        str(output_json),
     ]
 
     if model:
@@ -146,5 +154,7 @@ def main(cycles: int = 5, env: str = "", model: str = "", output_name: str = "")
     """Trigger the cloud execution."""
     target_desc = f"env={env or 'all'}, model={model or 'finals'}, cycles={cycles}"
     print(f"Triggering cloud benchmark on Modal ({target_desc})...")
-    exit_code = run_cloud_benchmark.remote(cycles=cycles, env=env, model=model, output_name=output_name)
+    exit_code = run_cloud_benchmark.remote(
+        cycles=cycles, env=env, model=model, output_name=output_name
+    )
     print(f"Cloud execution completed with exit code: {exit_code}")

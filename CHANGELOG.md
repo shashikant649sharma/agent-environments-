@@ -7,25 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.5.1] - 2026-10-31 — Harness Parameter Reachability, Strict Defaults & Prompt v2
+## [0.5.1] - 2026-11-03 — Research README Overhaul, Golden Path Deduplication & Harness Reachability
 
-### Fixed & Enhanced
-- **Gymnasium Wrapper Action Kwargs Reachability** (`framework/gymnasium_wrapper.py`, `benchmark_models.py`):
-  - Repaired `AgentPraxisGymEnv.step()` to forward action arguments (`kwargs`) via structured action dictionaries `{"action": idx, "kwargs": {...}}` and tuple pairs `(idx, kwargs)`, eliminating artificial scoring ceilings on parameterized environments (Catch-22, Sophie's Choice, Library of Babel, Othello, The Trial).
-  - Integrated `validate_action_call` parameter schema checking inside Gymnasium wrapper `step()` to return clean error observations rather than crashing with unhandled Python `TypeError`.
-  - Added chronological evidence tracking (`evidence_log`) in `benchmark_models.py` across turns.
-- **Strict Compliance Mode for Smart Defaults Elimination** (`framework/variants.py`, `schema.py`, environments):
-  - Added `strict_compliance` capability to `sorcerers-apprentice`, `sophies-choice`, and `othello`, requiring explicit agent parameters for blast radius and priority triage (`delete_files(paths=[...])`, `set_bay_breaker(bay=...)`, `set_transaction_isolation(level=...)`).
-  - Calls omitting required decision arguments in strict mode raise `CommandError("STRICT_COMPLIANCE_VIOLATION: ...")` and fail multi-dimensional compliance (`constraint_compliance = False`).
-  - Standard mode retains zero-arg fallback for backward compatibility while recording `used_smart_default_*` in mutable state and surfacing it in evaluation details.
+### Added
+- **Research-Grade README Architecture**:
+  - Completely redesigned `README.md` into a 14-section technical specification backed by empirical benchmark data, reproducible evaluation ladders, and responsive SVG diagrams.
+  - Reserved clearly marked placeholders (`<!-- IMAGE PLACEHOLDER: HERO / PROJECT VISUAL -->`, `<!-- IMAGE PLACEHOLDER: ARCHITECTURE OVERVIEW -->`, `<!-- IMAGE PLACEHOLDER: ENVIRONMENT ILLUSTRATION -->`) for future graphic assets without fabricating synthetic images.
+- **Reproducible SVG Figure & Asset Pipeline** (`tools/readme_results/`, `tools/generate_readme_assets.py`):
+  - Programmatic generation of clean, high-contrast SVG figures and visual asset integration.
+  - Strict failure classification pipeline distinguishing infrastructure/provider failures (`provider_error`, `context_overflow`) from model reasoning faults (`parse_failure`, `invalid_action`, `task_failure`).
+  - Automated generation of Markdown tables for frontier models, baseline policy ladders, environment capabilities, and multi-dimensional scoring rubrics.
+- **Automated Consistency & Integrity Validation** (`tools/validate_readme.py`):
+  - Automated check validating all markdown links, visual assets, version consistency (`v0.5.1`), and CLI command syntax.
+- **Git Provenance Handling for Varied Environments** (`tools/verify_results_provenance.py`):
+  - Added repository state detection (`get_git_repo_state()`) distinguishing full Git clones, shallow clones, and source zip downloads without `.git`.
+  - Added regression test suite (`tests/runner/test_provenance_validator_regression.py`) covering all three clone states without false CI failures.
 - **Generic OpenAI-Compatible Provider Connector** (`framework/prompt.py`, `benchmark_models.py`):
   - Added `get_action_from_openai` provider connector supporting `--provider openai` with configurable `OPENAI_BASE_URL` and `OPENAI_API_KEY`.
   - Fixed Meta API default endpoint to `https://api.llama.com/v1/chat/completions` across `benchmark_models.py`, `prompt.py`, `README.md`, `docs/HACKATHON_REPORT.md`, and `.env.example`.
-- **Prompt Specification Version 2 & Digest Pinning** (`framework/prompt.py`, docs):
-  - Bumped prompt version to `sre-json-action-index-v2` with recomputed canonical SHA-256 digest `46b1a180a7e6f29184e50b77b6f33f8745177a77467ae450d95fdb497424b1c4`, reflecting parameterized kwargs landing in canonical action menus.
-- **Test Suite & Reachability Regression Tests**:
-  - Test suite grew to **1,032 automated tests** passing at 100% in CI (<9s).
-  - Added `tests/environment/test_strict_smart_defaults.py` and `tests/runner/test_model_harness_oracle.py` verifying full 1.0000 reachability on all 10 environments through the model harness.
+- **Strict Compliance Mode for Smart Defaults Elimination** (`framework/variants.py`, `schema.py`, environments):
+  - Added `strict_compliance` capability to `sorcerers-apprentice`, `sophies-choice`, and `othello`, requiring explicit agent parameters for blast radius and priority triage.
+
+### Changed & Fixed
+- **Golden-Path Deduplication & Evaluator Calibration** (`agent_praxis/framework/evaluation/golden.py`, `run_10_environments_benchmark.py`):
+  - Unified canonical golden path definitions in `golden.py`; refactored `run_10_environments_benchmark.py` to consume the canonical module directly.
+  - Fixed Othello incident-turn advancement bug where a premature `advance_incident_turn()` skipped the turn 2 pushback check, restoring canonical reference score to 1.0000 across all 10 environments.
+- **Gymnasium Wrapper Action Kwargs Reachability** (`framework/gymnasium_wrapper.py`, `benchmark_models.py`):
+  - Repaired `AgentPraxisGymEnv.step()` to forward action arguments (`kwargs`) via structured action dictionaries `{"action": idx, "kwargs": {...}}` and tuple pairs `(idx, kwargs)`, eliminating artificial scoring ceilings on parameterized environments.
+- **Demo CLI Polish** (`agent_praxis/commands/demo.py`):
+  - Bumped version banner to `v0.5.1`.
+  - Added canonical seed mapping (`CANONICAL_SEEDS`) and automated fallback when `--seed` is omitted.
+  - Ensured displayed scores are computed directly from evaluator output rather than static text.
+- **Benchmark & Report Synchronization**:
+  - Reconciled `RESULTS.md`, `docs/HACKATHON_REPORT.md`, `docs/DEMO_VIDEO_SCRIPT.md`, and `CITATION.cff` to version `v0.5.1`.
+  - Documented authoritative source mappings and SHA-256 fingerprints in `docs/readme_overhaul/SOURCE_OF_TRUTH.md`.
 
 ---
 

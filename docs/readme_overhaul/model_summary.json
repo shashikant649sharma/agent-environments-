@@ -1,0 +1,221 @@
+{
+  "models_count": 9,
+  "models": [
+    {
+      "model": "Qwen/Qwen3.8-Max-VL-Thinking",
+      "total_episodes": 60,
+      "valid_episodes": 60,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.45,
+      "mean_ci": [
+        0.3338,
+        0.5662
+      ],
+      "median_score": 0.45,
+      "task_success_count": 30,
+      "task_success_rate": 0.5,
+      "wilson_ci": [
+        0.3774,
+        0.6226
+      ],
+      "compliance_rate": 0.5,
+      "score_range": [
+        0.0,
+        0.9
+      ]
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "total_episodes": 300,
+      "valid_episodes": 300,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.6402,
+      "mean_ci": [
+        0.5996,
+        0.6809
+      ],
+      "median_score": 0.9,
+      "task_success_count": 155,
+      "task_success_rate": 0.5167,
+      "wilson_ci": [
+        0.4603,
+        0.5726
+      ],
+      "compliance_rate": 0.8,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+      "total_episodes": 300,
+      "valid_episodes": 300,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.6083,
+      "mean_ci": [
+        0.562,
+        0.6546
+      ],
+      "median_score": 0.75,
+      "task_success_count": 175,
+      "task_success_rate": 0.5833,
+      "wilson_ci": [
+        0.5268,
+        0.6377
+      ],
+      "compliance_rate": 0.7833,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "model": "meta-models/Muse-Spark-Open-816B-A42B",
+      "total_episodes": 300,
+      "valid_episodes": 300,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.8507,
+      "mean_ci": [
+        0.8182,
+        0.8832
+      ],
+      "median_score": 1.0,
+      "task_success_count": 250,
+      "task_success_rate": 0.8333,
+      "wilson_ci": [
+        0.787,
+        0.8712
+      ],
+      "compliance_rate": 0.93,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "model": "meta-models/muse-spark-open-1026",
+      "total_episodes": 10,
+      "valid_episodes": 8,
+      "provider_errors": 2,
+      "provider_failure_rate": 0.2,
+      "mean_score": 0.4683,
+      "mean_ci": [
+        0.0971,
+        0.8394
+      ],
+      "median_score": 0.38,
+      "task_success_count": 3,
+      "task_success_rate": 0.375,
+      "wilson_ci": [
+        0.1368,
+        0.6943
+      ],
+      "compliance_rate": 0.75,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "model": "moonshotai/Kimi-K3",
+      "total_episodes": 300,
+      "valid_episodes": 300,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.6627,
+      "mean_ci": [
+        0.6209,
+        0.7044
+      ],
+      "median_score": 0.9,
+      "task_success_count": 177,
+      "task_success_rate": 0.59,
+      "wilson_ci": [
+        0.5335,
+        0.6442
+      ],
+      "compliance_rate": 0.8067,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "model": "nvidia/GLM-5.3-Flash-NVFP4",
+      "total_episodes": 300,
+      "valid_episodes": 300,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.4664,
+      "mean_ci": [
+        0.4181,
+        0.5148
+      ],
+      "median_score": 0.3,
+      "task_success_count": 121,
+      "task_success_rate": 0.4033,
+      "wilson_ci": [
+        0.3494,
+        0.4597
+      ],
+      "compliance_rate": 0.5667,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "model": "zai-org/GLM-5.3",
+      "total_episodes": 300,
+      "valid_episodes": 300,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.5008,
+      "mean_ci": [
+        0.4491,
+        0.5524
+      ],
+      "median_score": 0.3,
+      "task_success_count": 140,
+      "task_success_rate": 0.4667,
+      "wilson_ci": [
+        0.411,
+        0.5232
+      ],
+      "compliance_rate": 0.58,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "model": "zai-org/GLM-5.3-Flash",
+      "total_episodes": 300,
+      "valid_episodes": 300,
+      "provider_errors": 0,
+      "provider_failure_rate": 0.0,
+      "mean_score": 0.489,
+      "mean_ci": [
+        0.441,
+        0.537
+      ],
+      "median_score": 0.3,
+      "task_success_count": 126,
+      "task_success_rate": 0.42,
+      "wilson_ci": [
+        0.3655,
+        0.4765
+      ],
+      "compliance_rate": 0.5933,
+      "score_range": [
+        0.0,
+        1.0
+      ]
+    }
+  ]
+}

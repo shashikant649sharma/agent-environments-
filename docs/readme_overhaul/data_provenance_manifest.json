@@ -1,0 +1,29 @@
+{
+  "version": "0.5.1",
+  "artifacts": {
+    "finals_full": {
+      "path": "results/finals_full.json",
+      "sha256": "f615a97c76037faa29c64b492e996f4d5d3b1128da253f9ce6109f2270498e0f",
+      "runs": 2160
+    },
+    "muse_spark_open_1026": {
+      "path": "results/muse_spark_open_10env_benchmark.json",
+      "sha256": "af27bf97f2aa78f6ddaa44bb31491453e958bab97c0fd49a1db6d9552e9be54a",
+      "runs": 10
+    },
+    "baseline_canonical_300": {
+      "path": "results/baselines/baseline_v050_canonical_300runs.json",
+      "sha256": "69aadd554f94cda0d74e06cf577b551bbdf9e7c9dcea24002620a923700bfc7b",
+      "runs": 300
+    }
+  },
+  "figures": [
+    "assets/readme/architecture.svg",
+    "assets/readme/frontier-model-scores.svg",
+    "assets/readme/task-success.svg",
+    "assets/readme/infrastructure-reliability.svg",
+    "assets/readme/baseline-comparison.svg",
+    "assets/readme/environment-matrix.svg",
+    "assets/readme/scoring-rubric.svg"
+  ]
+}

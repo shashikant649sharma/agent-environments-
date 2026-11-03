@@ -11,7 +11,7 @@
     <a href="https://github.com/shashikant649sharma/agent-praxis/actions/workflows/ci.yml"><img src="https://github.com/shashikant649sharma/agent-praxis/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
     <img src="https://img.shields.io/badge/Python-3.11%2B-blue.svg" alt="Python 3.11+" />
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" />
-    <img src="https://img.shields.io/badge/tests-990%20passed-success.svg" alt="990 Tests Passed" />
+    <img src="https://img.shields.io/badge/tests-1,047%20passed-success.svg" alt="1,047 Tests Passed" />
     <img src="https://img.shields.io/badge/version-0.5.1-orange.svg" alt="Version 0.5.1" />
     <img src="https://img.shields.io/badge/environments-10%20adversarial-purple.svg" alt="10 Environments" />
   </p>
@@ -33,7 +33,7 @@ Agent Praxis grounds autonomous agent evaluation in **underlying causal state mu
 - **Top Valid-Only Performance:** `meta-models/Muse-Spark-Open-816B-A42B` achieved **0.8507** valid-only multi-seed mean score ($N=300$, 95% CI $[0.8174, 0.8840]$) with **83.3%** physical task success ($250/300$, 95% Wilson CI $[78.7\%, 87.1\%]$).
 - **Strict Zero-Credit Floor (0.0000):** Validated across **300 canonical baseline runs** ([`results/baselines/baseline_v050_canonical_300runs.json`](results/baselines/baseline_v050_canonical_300runs.json)); passive no-op, read-only inspection, and uninformed blind search earn strictly **0.0000** credit.
 - **Verified Solvability (1.0000):** Reference scripted oracles score strictly **1.0000** across all 10 environments on all seeds.
-- **[990 Validated Tests](tests/):** Complete unit, adversarial, regression, and container isolation suite passing at 100% green (1 skipped).
+- **[1,047 Validated Tests](tests/):** Complete unit, adversarial, regression, and container isolation suite passing at 100% green (1 skipped).
 
 ---
 
@@ -337,7 +337,7 @@ agent-praxis/
 ├── results/                       # Empirical experiment records (JSON & CSV)
 │   ├── baselines/                 # Canonical 300-run baseline ladder artifacts
 │   └── finals_full.json           # 2,160 recorded frontier model episodes
-├── tests/                         # 990 verified unit, adversarial, and security tests
+├── tests/                         # 1,047 verified unit, adversarial, and security tests
 └── tools/                         # Asset generation and validation pipelines
 ```
 

@@ -43,22 +43,24 @@ def validate_readme() -> list[str]:
         if not target.exists():
             errors.append(f"Broken local link/path in README: {ref_clean}")
 
-    # 2. Check all 7 required SVGs exist and are referenced
-    required_svgs = [
-        "assets/readme/architecture.svg",
-        "assets/readme/frontier-model-scores.svg",
-        "assets/readme/task-success.svg",
-        "assets/readme/infrastructure-reliability.svg",
-        "assets/readme/baseline-comparison.svg",
-        "assets/readme/environment-matrix.svg",
-        "assets/readme/scoring-rubric.svg",
+    # 2. Check all 9 production visual assets exist and are referenced
+    required_pngs = [
+        "assets/readme/agent-praxis-experimental-workflow.png",
+        "assets/readme/security-architecture.png",
+        "assets/readme/bidirectional-environment-evaluation.png",
+        "assets/readme/model-configurations-outcomes.png",
+        "assets/readme/model-performance-heatmap.png",
+        "assets/readme/episode-status-breakdown.png",
+        "assets/readme/iconic-literary-environments-grid.png",
+        "assets/readme/weighted-evaluation-rubric.png",
+        "assets/readme/traceable-benchmark-workflow.png",
     ]
-    for svg_rel in required_svgs:
-        svg_path = root_dir / svg_rel
-        if not svg_path.exists():
-            errors.append(f"Required SVG missing on disk: {svg_rel}")
-        if svg_rel not in content:
-            errors.append(f"Required SVG not referenced in README.md: {svg_rel}")
+    for png_rel in required_pngs:
+        png_path = root_dir / png_rel
+        if not png_path.exists():
+            errors.append(f"Required PNG visual asset missing on disk: {png_rel}")
+        if png_rel not in content:
+            errors.append(f"Required PNG visual asset not referenced in README.md: {png_rel}")
 
     # 3. Check for image placeholders
     required_placeholders = [

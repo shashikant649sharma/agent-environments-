@@ -80,6 +80,16 @@
 ## Phase 6 & 7: Verification & Final Tests (Completed)
 - [x] Built `tools/generate_readme_assets.py` for fully automated one-step asset rebuilding.
 - [x] Built `tools/validate_readme.py` verifying links, figures, versions, and test counts.
+- [x] Integrated 9 production visual assets into `assets/readme/` and wired them across corresponding `README.md` sections:
+  - `agent-praxis-experimental-workflow.png` (Hero visual)
+  - `security-architecture.png` (Architecture overview)
+  - `bidirectional-environment-evaluation.png` (Evaluation cycle)
+  - `model-configurations-outcomes.png` (Frontier models)
+  - `model-performance-heatmap.png` (Score distribution heatmap)
+  - `episode-status-breakdown.png` (Infrastructure reliability donut)
+  - `iconic-literary-environments-grid.png` (Environment illustration)
+  - `weighted-evaluation-rubric.png` (Scoring methodology)
+  - `traceable-benchmark-workflow.png` (Reproducibility & provenance)
 - [x] Full Pytest test suite executed: **990 passed, 1 skipped, 0 failed**.
 - [x] Automated README validation executed: **0 errors**.
 - [x] Provenance verification executed on canonical baseline and model datasets.

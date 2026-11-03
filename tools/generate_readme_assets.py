@@ -84,16 +84,17 @@ def generate_all_assets() -> dict[str, Any]:
 
     models_metrics = [aggregate_model_episodes(m, recs) for m, recs in sorted(by_model.items())]
 
-    # 2. Generate SVGs
-    generate_architecture_svg(assets_dir / "architecture.svg")
-    generate_frontier_model_scores_svg(models_metrics, assets_dir / "frontier-model-scores.svg")
-    generate_task_success_svg(models_metrics, assets_dir / "task-success.svg")
-    generate_reliability_svg(models_metrics, assets_dir / "infrastructure-reliability.svg")
-
     baselines, base_meta = load_canonical_baseline_summary(baseline_path)
-    generate_baseline_comparison_svg(baselines, assets_dir / "baseline-comparison.svg")
-    generate_environment_matrix_svg(assets_dir / "environment-matrix.svg")
-    generate_scoring_rubric_svg(assets_dir / "scoring-rubric.svg")
+
+    # 2. Generate SVGs only if explicitly requested
+    if "--svg" in sys.argv:
+        generate_architecture_svg(assets_dir / "architecture.svg")
+        generate_frontier_model_scores_svg(models_metrics, assets_dir / "frontier-model-scores.svg")
+        generate_task_success_svg(models_metrics, assets_dir / "task-success.svg")
+        generate_reliability_svg(models_metrics, assets_dir / "infrastructure-reliability.svg")
+        generate_baseline_comparison_svg(baselines, assets_dir / "baseline-comparison.svg")
+        generate_environment_matrix_svg(assets_dir / "environment-matrix.svg")
+        generate_scoring_rubric_svg(assets_dir / "scoring-rubric.svg")
 
     # 3. Generate Markdown tables
     model_table_md = generate_frontier_model_table(models_metrics)
@@ -136,21 +137,24 @@ def generate_all_assets() -> dict[str, Any]:
     manifest = {
         "version": "0.5.1",
         "artifacts": manifest_artifacts,
-        "figures": [
-            "assets/readme/architecture.svg",
-            "assets/readme/frontier-model-scores.svg",
-            "assets/readme/task-success.svg",
-            "assets/readme/infrastructure-reliability.svg",
-            "assets/readme/baseline-comparison.svg",
-            "assets/readme/environment-matrix.svg",
-            "assets/readme/scoring-rubric.svg",
+        "production_assets": [
+            "assets/readme/agent-praxis-experimental-workflow.png",
+            "assets/readme/security-architecture.png",
+            "assets/readme/bidirectional-environment-evaluation.png",
+            "assets/readme/model-configurations-outcomes.png",
+            "assets/readme/model-performance-heatmap.png",
+            "assets/readme/episode-status-breakdown.png",
+            "assets/readme/iconic-literary-environments-grid.png",
+            "assets/readme/weighted-evaluation-rubric.png",
+            "assets/readme/traceable-benchmark-workflow.png",
         ],
     }
     (docs_dir / "data_provenance_manifest.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8"
     )
 
-    print(f"Generated 7 SVG figures in {assets_dir}")
+    if "--svg" in sys.argv:
+        print(f"Generated 7 SVG figures in {assets_dir}")
     print(f"Generated tables and manifests in {docs_dir}")
     return summary_data
 

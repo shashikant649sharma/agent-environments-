@@ -33,27 +33,40 @@ if hasattr(sys.stderr, "reconfigure"):
     with contextlib.suppress(Exception):
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-# Auto-load .env if present
-if os.path.exists(".env"):
-    with contextlib.suppress(Exception), open(".env", encoding="utf-8") as _env_f:
-        for _env_line in _env_f:
-            _env_line = _env_line.strip()
-            if _env_line and not _env_line.startswith("#") and "=" in _env_line:
-                _env_k, _env_v = _env_line.split("=", 1)
-                if _env_k.strip() not in os.environ:
-                    os.environ[_env_k.strip()] = _env_v.strip()
+# Auto-load .env if present across working dir or repository roots
+_env_candidates = [
+    Path.cwd() / ".env",
+    Path(__file__).resolve().parent / ".env",
+    Path("D:/Shashi/agent-praxis/.env"),
+]
+for _p in Path(__file__).resolve().parents:
+    _env_candidates.append(_p / ".env")
+for _env_path in _env_candidates:
+    if _env_path.is_file():
+        with contextlib.suppress(Exception), open(_env_path, encoding="utf-8") as _env_f:
+            for _env_line in _env_f:
+                _env_line = _env_line.strip()
+                if _env_line and not _env_line.startswith("#") and "=" in _env_line:
+                    _env_k, _env_v = _env_line.split("=", 1)
+                    _env_k = _env_k.strip()
+                    _env_v = _env_v.strip().strip("'\"")
+                    if _env_k and not os.environ.get(_env_k):
+                        os.environ[_env_k] = _env_v
 
 from agent_praxis.framework.gymnasium_wrapper import ENV_SPECS, AgentPraxisGymEnv  # noqa: E402
 from agent_praxis.framework.prompt import (  # noqa: E402
     DEFAULT_CONTEXT_POLICY,
+    MODAL_MODELS,
     PROMPT_VERSION,
     PROVIDER_DEFAULT_CONTEXT_LIMITS,
     SUPPORTED_CONTEXT_POLICIES,
+    ActionOutcomeKind,
     ModelTurnResponse,
     apply_context_budget,
     extract_action_with_status,
     query_provider_action,
     render_turn_prompt,
+    resolve_modal_endpoint,
 )
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
@@ -82,9 +95,6 @@ GROQ_MODELS = [
 ]
 
 META_MODELS = [
-    "meta-models/muse-spark-open-1026",
-    "meta/muse-spark-open",
-    "meta-models/Muse-Spark-Open-816B-A42B",
     "meta-llama/Llama-3.3-70B-Instruct",
     "meta-llama/Llama-3.1-405B-Instruct",
     "meta-llama/Llama-3.1-70B-Instruct",
@@ -92,13 +102,70 @@ META_MODELS = [
     "meta-llama/Llama-3.2-1B-Instruct",
 ]
 
+BASETEN_MODELS = [
+    "meta-models/muse-spark-open-1026",
+]
+
+# Primary 15-Model Candidate Pool for Finals Research Evaluation
+# Verified Cloud Frontier Models for Finals Research Evaluation (Local LLMs Removed)
+CLOUD_FINALS_MODELS = [
+    "meta-models/Muse-Spark-Open-816B-A42B",
+    "deepseek-ai/DeepSeek-V4.1-Flash",
+    "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+    "zai-org/GLM-5.3-Flash",
+    "zai-org/GLM-5.3",
+    "nvidia/GLM-5.3-Flash-NVFP4",
+    "moonshotai/Kimi-K3",
+    "Qwen/Qwen3.8-Max-VL-Thinking",
+    "meta-models/muse-spark-open-1026",
+]
+
+if os.environ.get("GROQ_API_KEY"):
+    FINALS_MODELS = CLOUD_FINALS_MODELS + [
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "qwen/qwen-2.5-32b",
+        "meta-llama/Llama-3.3-70B-Instruct",
+    ]
+else:
+    FINALS_MODELS = list(CLOUD_FINALS_MODELS)
+
+RESEARCH_MODELS_15 = FINALS_MODELS
+
+# Mode B — Calibration & Reference Controls
+REFERENCE_CONTROL_MODELS = [
+    "mock-oracle",
+    "mock-decoy",
+    "mock-random",
+]
+
+# Mode C — Robustness & Ablation Variants
+ROBUSTNESS_VARIANTS = [
+    "standard",
+    "high_deception",
+    "strict_compliance",
+    "randomized_invariants",
+]
+
+# Fixed Matched Seed Manifest (30 Matched Seeds: 1001..1030)
+FINAL_MATCHED_SEEDS = [1000 + i for i in range(1, 31)]
+
 MODEL_ALIASES: dict[str, str] = {
     "muse-spark-open": "meta-models/muse-spark-open-1026",
     "muse-spark": "meta-models/muse-spark-open-1026",
     "meta/muse-spark-open": "meta-models/muse-spark-open-1026",
     "meta-models/muse-spark-open": "meta-models/muse-spark-open-1026",
     "meta-models/muse-spark-open-1026": "meta-models/muse-spark-open-1026",
-    "meta-models/Muse-Spark-Open-816B-A42B": "meta-models/muse-spark-open-1026",
+    "deepseek-v4.1-flash": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "deepseek-v4.1-flash-1017": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+    "glm-5.3-flash": "zai-org/GLM-5.3-Flash",
+    "glm-5.3": "zai-org/GLM-5.3",
+    "glm-5.3-flash-nvfp4": "nvidia/GLM-5.3-Flash-NVFP4",
+    "kimi-k3": "moonshotai/Kimi-K3",
+    "muse-spark-816b": "meta-models/Muse-Spark-Open-816B-A42B",
+    "muse-spark-open-816b": "meta-models/Muse-Spark-Open-816B-A42B",
+    "qwen3.8-max-vl-thinking": "Qwen/Qwen3.8-Max-VL-Thinking",
+    "qwen3.8-thinking": "Qwen/Qwen3.8-Max-VL-Thinking",
     "qwen-2.5-32b": "qwen/qwen-2.5-32b",
     "llama-3.3-70b": "meta-llama/Llama-3.3-70B-Instruct",
     "llama-3.1-405b": "meta-llama/Llama-3.1-405B-Instruct",
@@ -128,7 +195,7 @@ MOCK_MODELS = [
     "mock-decoy",
 ]
 
-ALL_MODELS = OLLAMA_MODELS + GROQ_MODELS + META_MODELS + MOCK_MODELS
+ALL_MODELS = OLLAMA_MODELS + GROQ_MODELS + META_MODELS + BASETEN_MODELS + MODAL_MODELS + MOCK_MODELS
 
 ENVIRONMENTS = list(ENV_SPECS.keys())
 
@@ -175,6 +242,9 @@ def apply_context_policy(
 
 def _repo_commit_sha() -> str:
     """Best-effort git revision for provenance with dirty tree detection. Never raises."""
+    env_sha = os.environ.get("PRAXIS_GIT_COMMIT") or os.environ.get("GIT_COMMIT")
+    if env_sha:
+        return env_sha.strip()
     try:
         completed = subprocess.run(
             ["git", "rev-parse", "HEAD"],
@@ -205,16 +275,17 @@ def is_meta_model(model: str, provider: str = "auto") -> bool:
     """Determine whether a model should be routed to Meta."""
     if provider == "meta":
         return True
-    if provider in ("groq", "ollama"):
+    if provider in ("groq", "ollama", "modal"):
         return False
     resolved = resolve_model_alias(model)
+    if resolved in MODAL_MODELS or model in MODAL_MODELS:
+        return False
     return (
         model in META_MODELS
         or resolved in META_MODELS
         or model.startswith("meta-llama/")
         or model.startswith("meta-models/")
         or model.startswith("meta/")
-        or "muse" in model.lower()
     )
 
 
@@ -222,12 +293,18 @@ def is_groq_model(model: str, provider: str = "auto") -> bool:
     """Determine whether a model should be routed to Groq."""
     if provider == "groq":
         return True
-    if provider in ("ollama", "meta"):
+    if provider in ("ollama", "meta", "modal"):
+        return False
+    resolved = resolve_model_alias(model)
+    if (
+        resolved in MODAL_MODELS
+        or model in MODAL_MODELS
+        or resolve_modal_endpoint(model) is not None
+    ):
         return False
     if is_meta_model(model, provider=provider):
         return False
-    resolved = resolve_model_alias(model)
-    return model in GROQ_MODELS or resolved in GROQ_MODELS or "/" in model
+    return model in GROQ_MODELS or resolved in GROQ_MODELS
 
 
 def _effective_provider(model: str, provider: str = "auto") -> str:
@@ -235,10 +312,28 @@ def _effective_provider(model: str, provider: str = "auto") -> str:
     prov = provider.lower()
     if prov in ("mock", "offline") or model.lower().startswith("mock"):
         return "mock"
-    if prov in ("baseten", "meta", "groq", "ollama", "openai"):
+    if prov in ("baseten", "meta", "groq", "ollama", "openai", "modal"):
         return prov
     if prov in ("openai_compatible", "openai-compatible"):
         return "openai"
+
+    resolved = resolve_model_alias(model)
+    if (
+        prov == "modal"
+        or resolved in MODAL_MODELS
+        or model in MODAL_MODELS
+        or resolve_modal_endpoint(model) is not None
+    ):
+        return "modal"
+
+    if os.environ.get("BASETEN_API_KEY") and (
+        "baseten" in model.lower()
+        or resolved in BASETEN_MODELS
+        or model in BASETEN_MODELS
+        or model.lower() in ("muse-spark", "muse-spark-open")
+    ):
+        return "baseten"
+
     if os.environ.get("OPENAI_API_KEY") and (
         model.startswith("gpt-")
         or "openai" in model.lower()
@@ -247,10 +342,7 @@ def _effective_provider(model: str, provider: str = "auto") -> str:
         or "kimi" in model.lower()
     ):
         return "openai"
-    if os.environ.get("BASETEN_API_KEY") and (
-        "baseten" in model.lower() or "muse-spark" in model.lower()
-    ):
-        return "baseten"
+
     if is_meta_model(model, provider=provider):
         return "meta"
     if is_groq_model(model, provider=provider):
@@ -302,6 +394,10 @@ def _provenance(
             "temperature": META_TEMPERATURE,
             "max_tokens": META_MAX_TOKENS,
         },
+        "modal": {
+            "temperature": 0.0,
+            "max_tokens": 1024,
+        },
         "openai": {
             "temperature": 0.0,
             "max_tokens": 1024,
@@ -313,7 +409,11 @@ def _provenance(
     )
     commit_sha = _repo_commit_sha()
     reproducibility_status = (
-        "DIRTY_TREE_UNVERIFIED" if commit_sha.endswith("-dirty") else "CLEAN_GIT_COMMIT"
+        "DIRTY_TREE_UNVERIFIED"
+        if commit_sha.endswith("-dirty")
+        else "UNKNOWN_REVISION_UNVERIFIED"
+        if commit_sha == "unknown"
+        else "CLEAN_GIT_COMMIT"
     )
 
     return {
@@ -338,7 +438,15 @@ def _provenance(
 
 def unload_ollama_model(model: str) -> None:
     """Promptly release model weights from VRAM/RAM (Ollama only)."""
-    if is_groq_model(model) or is_meta_model(model):
+    if (
+        is_groq_model(model)
+        or is_meta_model(model)
+        or model in MODAL_MODELS
+        or resolve_model_alias(model) in MODAL_MODELS
+        or model in BASETEN_MODELS
+        or "muse-spark" in model.lower()
+        or model.startswith("mock-")
+    ):
         return
     try:
         payload = {"model": model, "keep_alive": 0}
@@ -373,6 +481,8 @@ def get_action(
     baseten_api_url: str | None = None,
     openai_api_key: str | None = None,
     openai_api_url: str | None = None,
+    modal_api_key: str | None = None,
+    modal_api_url: str | None = None,
 ) -> ModelTurnResponse:
     """Execute action query with unified token budgeting and truthful outcome classification."""
     return query_provider_action(
@@ -388,6 +498,8 @@ def get_action(
         baseten_api_url=baseten_api_url,
         openai_api_key=openai_api_key,
         openai_api_url=openai_api_url,
+        modal_api_key=modal_api_key,
+        modal_api_url=modal_api_url,
     )
 
 
@@ -407,11 +519,28 @@ def evaluate_single_run(
     baseten_api_url: str | None = None,
     openai_api_key: str | None = None,
     openai_api_url: str | None = None,
+    modal_api_key: str | None = None,
+    modal_api_url: str | None = None,
+    event_callback: Any = None,
+    quiet: bool = False,
 ) -> dict[str, Any]:
+    def emit(tag: str, msg: str, data: dict[str, Any] | None = None) -> None:
+        if event_callback is not None:
+            with contextlib.suppress(Exception):
+                event_callback(tag, msg, data or {})
+
+    def log_print(msg: str) -> None:
+        if not quiet:
+            print(msg, flush=True)
+
     start_time = time.time()
     env = AgentPraxisGymEnv(environment=env_name, seed=seed, variant=variant, max_steps=max_steps)
     obs, info = env.reset()
     action_names = info["action_names"]
+    eff_provider = _effective_provider(model, provider)
+
+    emit("INFO", f"Environment {env_name} initialized", {"env": env_name, "seed": seed})
+    emit("API", f"Provider connected ({eff_provider})", {"provider": eff_provider})
 
     system_prompt = (
         "You are an expert SRE and distributed systems investigator resolving an active incident. "
@@ -497,6 +626,13 @@ def evaluate_single_run(
             "investigation_log": evidence_log,
         }
 
+        emit(
+            "AGENT",
+            f"Trajectory step {step_num + 1:02d}/{max_steps:02d}",
+            {"step": step_num + 1, "max_steps": max_steps, "evaluator_state": "WAITING FOR STATE"},
+        )
+        emit("EVAL", "Evaluator awaiting state", {"evaluator_state": "WAITING FOR STATE"})
+
         # 1. Build canonical prompt (System instructions -> Available actions -> Observation -> Action history -> Decision request)
         prompt_res = render_turn_prompt(
             system_prompt=system_prompt,
@@ -514,7 +650,12 @@ def evaluate_single_run(
                 "context_overflow",
                 "Mandatory prompt content exceeded context budget",
             )
-            print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}", flush=True)
+            emit(
+                "ERROR",
+                f"Step {step_num + 1} {error_kind}: {error_message}",
+                {"error": error_message, "error_kind": error_kind},
+            )
+            log_print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}")
             return _result(
                 duration_seconds=round(time.time() - start_time, 2),
                 error=error_message,
@@ -536,8 +677,16 @@ def evaluate_single_run(
             baseten_api_url=baseten_api_url,
             openai_api_key=openai_api_key,
             openai_api_url=openai_api_url,
+            modal_api_key=modal_api_key,
+            modal_api_url=modal_api_url,
         )
-        action_idx, raw_response, provider_error = turn_resp
+        action_idx = turn_resp.action_index
+        raw_response = turn_resp.raw_response
+        provider_error = (
+            turn_resp.error_message
+            if turn_resp.outcome_kind == ActionOutcomeKind.PROVIDER_ERROR
+            else None
+        )
         total_prompt_tokens += turn_resp.token_usage.prompt_tokens
         total_completion_tokens += turn_resp.token_usage.completion_tokens
         tokens_measured = tokens_measured or turn_resp.token_usage.is_measured
@@ -549,9 +698,9 @@ def evaluate_single_run(
             # The model replied, but nothing in the reply mapped to an action.
             # Retry exactly once with an explicit format correction; the
             # observation itself is unchanged.
-            print(
-                f"    [!] Step {step_num + 1} unparseable response; retrying with a format hint",
-                flush=True,
+            emit("WARN", "Retry triggered: unparseable model response", {})
+            log_print(
+                f"    [!] Step {step_num + 1} unparseable response; retrying with a format hint"
             )
             parse_failures += 1
             retry_messages = [
@@ -574,9 +723,21 @@ def evaluate_single_run(
                 groq_api_key=groq_api_key,
                 meta_api_key=meta_api_key,
                 meta_api_url=meta_api_url,
+                baseten_api_key=baseten_api_key,
+                baseten_api_url=baseten_api_url,
+                openai_api_key=openai_api_key,
+                openai_api_url=openai_api_url,
+                modal_api_key=modal_api_key,
+                modal_api_url=modal_api_url,
             )
             turn_resp = retry_resp
-            action_idx, raw_response, provider_error = retry_resp
+            action_idx = retry_resp.action_index
+            raw_response = retry_resp.raw_response
+            provider_error = (
+                retry_resp.error_message
+                if retry_resp.outcome_kind == ActionOutcomeKind.PROVIDER_ERROR
+                else None
+            )
             total_prompt_tokens += retry_resp.token_usage.prompt_tokens
             total_completion_tokens += retry_resp.token_usage.completion_tokens
             tokens_measured = tokens_measured or retry_resp.token_usage.is_measured
@@ -584,35 +745,107 @@ def evaluate_single_run(
                 raw_responses.append(raw_response)
 
         step_elapsed = time.time() - step_t0
+        turn_usage = turn_resp.token_usage
+        p_tokens = getattr(turn_usage, "prompt_tokens", 0) or 0
+        c_tokens = getattr(turn_usage, "completion_tokens", 0) or 0
+        is_meas = getattr(turn_usage, "is_measured", False)
+        t_src = getattr(
+            turn_usage, "source", "provider_reported" if is_meas else "heuristic_estimated"
+        )
+
+        emit(
+            "MODEL",
+            f"Response received · {step_elapsed:.1f}s",
+            {
+                "latency": step_elapsed,
+                "tokens": p_tokens + c_tokens,
+                "prompt_tokens": p_tokens,
+                "completion_tokens": c_tokens,
+                "is_measured": is_meas,
+                "token_source": t_src,
+                "raw": raw_response,
+                "action_idx": action_idx,
+                "observation": curr_parsed,
+                "step": step_num + 1,
+                "max_steps": max_steps,
+                "evaluator_state": "EVALUATING ACTION",
+            },
+        )
 
         if provider_error is not None or action_idx is None:
             if provider_error is not None:
                 error_kind, error_message = "provider_error", provider_error
+                outcome = "INFRA ERROR"
+            elif turn_resp.outcome_kind == ActionOutcomeKind.CONTEXT_OVERFLOW:
+                error_kind, error_message = (
+                    "context_overflow",
+                    turn_resp.error_message or "context overflow",
+                )
+                outcome = "INVALID"
             else:
-                error_kind, error_message = "parse_failure", "unparseable model response"
-            print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}", flush=True)
+                error_kind, error_message = (
+                    "parse_failure",
+                    turn_resp.error_message or "unparseable model response",
+                )
+                outcome = "INVALID"
+            emit(
+                "ERROR",
+                f"Step {step_num + 1} {error_kind}: {error_message} · {outcome}",
+                {
+                    "error": error_message,
+                    "error_kind": error_kind,
+                    "outcome": outcome,
+                    "step": step_num + 1,
+                    "max_steps": max_steps,
+                    "evaluator_state": f"ERROR ({outcome})",
+                },
+            )
+            log_print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}")
             return _result(
                 duration_seconds=round(time.time() - start_time, 2),
                 error=error_message,
                 error_kind=error_kind,
+                outcome=outcome,
             )
 
         if action_idx < 0 or action_idx >= len(action_names):
             error_kind, error_message = "invalid_action", f"Invalid action index {action_idx}"
-            print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}", flush=True)
+            outcome = "INVALID"
+            emit(
+                "ERROR",
+                f"Step {step_num + 1} {error_kind}: {error_message} · {outcome}",
+                {
+                    "error": error_message,
+                    "error_kind": error_kind,
+                    "outcome": outcome,
+                    "step": step_num + 1,
+                    "max_steps": max_steps,
+                    "evaluator_state": f"ERROR ({outcome})",
+                },
+            )
+            log_print(f"    [X] Step {step_num + 1} {error_kind}: {error_message}")
             return _result(
                 duration_seconds=round(time.time() - start_time, 2),
                 error=error_message,
                 error_kind=error_kind,
+                outcome=outcome,
             )
 
         action_name = action_names[action_idx]
         command_log.append(action_name)
         action_history.append((action_idx, action_name))
 
-        print(
-            f"    Step {step_num + 1:2d} ({step_elapsed:.1f}s): [{action_idx}] {action_name}",
-            flush=True,
+        log_print(f"    Step {step_num + 1:2d} ({step_elapsed:.1f}s): [{action_idx}] {action_name}")
+        emit(
+            "RESULT",
+            f"State verification passed · [{action_idx}] {action_name}",
+            {
+                "action_idx": action_idx,
+                "action_name": action_name,
+                "step": step_num + 1,
+                "max_steps": max_steps,
+                "evaluator_state": "VERIFIED (STATE PASSED)",
+            },
         )
 
         action_kwargs = getattr(turn_resp, "action_kwargs", {})
@@ -679,7 +912,34 @@ def evaluate_single_run(
     )
 
     total_duration = round(time.time() - start_time, 2)
+    outcome = (
+        "SOLVED"
+        if (task_success and final_reward >= 0.99)
+        else ("SOLVED (PARTIAL)" if task_success else "FAILED")
+    )
+    emit(
+        "RESULT",
+        f"State verification {'passed' if task_success else 'failed'} · {outcome}",
+        {
+            "task_success": task_success,
+            "score": final_reward,
+            "outcome": outcome,
+            "evaluator_state": f"OUTCOME: {outcome}",
+        },
+    )
+    emit(
+        "INFO",
+        f"Episode completed · score: {final_reward:.4f} · steps: {len(command_log)} · {outcome}",
+        {
+            "score": final_reward,
+            "task_success": task_success,
+            "steps": len(command_log),
+            "duration": total_duration,
+            "outcome": outcome,
+        },
+    )
     return _result(
+        outcome=outcome,
         score=final_reward,
         duration_seconds=total_duration,
         task_success=task_success,
@@ -749,17 +1009,32 @@ def evaluate_model_multi_seed(
     baseten_api_url: str | None = None,
     openai_api_key: str | None = None,
     openai_api_url: str | None = None,
+    modal_api_key: str | None = None,
+    modal_api_url: str | None = None,
+    event_callback: Any = None,
+    quiet: bool = False,
+    on_seed_start: Any = None,
+    on_seed_finish: Any = None,
+    check_stop: Any = None,
 ) -> dict[str, Any]:
-    print("\n==================================================", flush=True)
-    print(
-        f"> [{model}] -> [{env_name}] ({len(seeds)} seeds: {seeds}, context={context_policy})",
-        flush=True,
-    )
-    print("==================================================", flush=True)
+    if not quiet:
+        print("\n==================================================", flush=True)
+        print(
+            f"> [{model}] -> [{env_name}] ({len(seeds)} seeds: {seeds}, context={context_policy})",
+            flush=True,
+        )
+        print("==================================================", flush=True)
 
     runs = []
-    for s in seeds:
-        print(f"  * Seed {s} starting...", flush=True)
+    for idx, s in enumerate(seeds):
+        if check_stop and check_stop():
+            break
+        if on_seed_start:
+            with contextlib.suppress(Exception):
+                on_seed_start(s, idx + 1, len(seeds))
+
+        if not quiet:
+            print(f"  * Seed {s} starting...", flush=True)
         run_res = evaluate_single_run(
             model,
             env_name,
@@ -775,21 +1050,29 @@ def evaluate_model_multi_seed(
             baseten_api_url=baseten_api_url,
             openai_api_key=openai_api_key,
             openai_api_url=openai_api_url,
+            event_callback=event_callback,
+            quiet=quiet,
         )
         runs.append(run_res)
-        print(
-            f"    -> Seed {s} finished: score={run_res['score']:.4f}, "
-            f"success={run_res.get('task_success')}, steps={run_res.get('steps')}",
-            flush=True,
-        )
+        if on_seed_finish:
+            with contextlib.suppress(Exception):
+                on_seed_finish(run_res)
+
+        if not quiet:
+            print(
+                f"    -> Seed {s} finished: score={run_res['score']:.4f}, "
+                f"success={run_res.get('task_success')}, steps={run_res.get('steps')}",
+                flush=True,
+            )
 
     stats = compute_spread_statistics(runs)
-    print(
-        f"[SUMMARY] [{model}] -> [{env_name}]: Mean={stats['mean']:.4f} ± {stats['std']:.4f} "
-        f"[Min={stats['min']:.4f}, Max={stats['max']:.4f}] "
-        f"Success={stats['success_rate'] * 100:.0f}%",
-        flush=True,
-    )
+    if not quiet:
+        print(
+            f"[SUMMARY] [{model}] -> [{env_name}]: Mean={stats['mean']:.4f} ± {stats['std']:.4f} "
+            f"[Min={stats['min']:.4f}, Max={stats['max']:.4f}] "
+            f"Success={stats['success_rate'] * 100:.0f}%",
+            flush=True,
+        )
 
     return {
         "model": model,
@@ -836,9 +1119,61 @@ def main() -> None:
     )
     parser.add_argument(
         "--provider",
-        choices=["auto", "ollama", "groq", "meta", "baseten", "openai", "mock", "offline"],
+        choices=["auto", "ollama", "groq", "meta", "baseten", "openai", "modal", "mock", "offline"],
         default="auto",
-        help="Inference provider (auto, ollama, groq, meta, baseten, openai, mock, offline)",
+        help="Inference provider (auto, ollama, groq, meta, baseten, openai, modal, mock, offline)",
+    )
+    parser.add_argument(
+        "--finals",
+        action="store_true",
+        help="Benchmark across the primary 15-model research pool with 30 matched seeds (4,500 episodes)",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["standard", "controls", "ablation", "all"],
+        default="standard",
+        help="Execution mode: standard (primary 4500 episodes), controls (oracle/decoy/random), ablation, or all",
+    )
+    parser.add_argument(
+        "--matched-seeds",
+        action="store_true",
+        help="Use published matched seed manifest (Seed 01: 1001 .. Seed 30: 1030)",
+    )
+    parser.add_argument(
+        "--interleaved",
+        action="store_true",
+        default=True,
+        help="Execute in interleaved cycle order (Cycle 01: Seed 1001 across all models, Cycle 02: Seed 1002...)",
+    )
+    parser.add_argument(
+        "--cycles",
+        type=int,
+        default=None,
+        help="Number of matched seed cycles (e.g. 30)",
+    )
+    parser.add_argument(
+        "--modal-token",
+        type=str,
+        default=None,
+        help="Modal Bearer Token (defaults to MODAL_TOKEN environment variable)",
+    )
+    parser.add_argument(
+        "--modal-key",
+        type=str,
+        default=None,
+        help="Modal Key ID (defaults to MODAL_KEY environment variable)",
+    )
+    parser.add_argument(
+        "--modal-secret",
+        type=str,
+        default=None,
+        help="Modal Secret Key (defaults to MODAL_SECRET environment variable)",
+    )
+    parser.add_argument(
+        "--modal-api-url",
+        type=str,
+        default=None,
+        help="Explicit Modal API URL override",
     )
     parser.add_argument(
         "--context-policy",
@@ -930,7 +1265,29 @@ def main() -> None:
         action="store_true",
         help="Enforce clean git working tree before benchmark execution (blocks dirty runs)",
     )
+    parser.add_argument(
+        "--monitor",
+        "--tui",
+        action="store_true",
+        help="Launch interactive Research Execution Console monitor TUI",
+    )
+    parser.add_argument(
+        "--all-envs",
+        action="store_true",
+        help="Benchmark across all 10 environments",
+    )
+    parser.add_argument(
+        "--no-tui",
+        action="store_true",
+        help="Disable interactive TUI and use streaming plain text output",
+    )
     args = parser.parse_args()
+
+    if getattr(args, "monitor", False):
+        from agent_praxis.commands.monitor import run_monitor_from_benchmark_args
+
+        run_monitor_from_benchmark_args(args)
+        return
 
     commit_sha = _repo_commit_sha()
     if commit_sha.endswith("-dirty"):
@@ -944,7 +1301,12 @@ def main() -> None:
             commit_sha,
         )
 
-    if args.all:
+    mode = getattr(args, "mode", "standard").lower()
+    if mode == "controls":
+        models = REFERENCE_CONTROL_MODELS
+    elif getattr(args, "finals", False) or (args.models and args.models == ["finals"]):
+        models = FINALS_MODELS
+    elif args.all:
         models = ALL_MODELS
     elif args.provider in ("mock", "offline") and not args.models:
         models = MOCK_MODELS
@@ -953,7 +1315,11 @@ def main() -> None:
     else:
         models = ["llama3.2:3b"]
 
-    environments = [args.env] if args.env else ENVIRONMENTS
+    environments = (
+        ENVIRONMENTS
+        if (getattr(args, "all_envs", False) or not args.env or args.env == "all")
+        else [args.env]
+    )
     groq_api_key = args.groq_api_key or os.environ.get("GROQ_API_KEY")
     meta_api_key = args.meta_api_key or os.environ.get(
         "META_API_KEY", os.environ.get("LLAMA_API_KEY")
@@ -963,6 +1329,17 @@ def main() -> None:
     baseten_api_url = args.baseten_api_url or os.environ.get("BASETEN_API_URL")
     openai_api_key = args.openai_api_key or os.environ.get("OPENAI_API_KEY")
     openai_api_url = args.openai_api_url or os.environ.get("OPENAI_BASE_URL")
+    modal_api_key = (
+        getattr(args, "modal_token", None)
+        or os.environ.get("MODAL_TOKEN")
+        or (
+            f"{getattr(args, 'modal_key', None) or os.environ.get('MODAL_KEY', '')}."
+            f"{getattr(args, 'modal_secret', None) or os.environ.get('MODAL_SECRET', '')}".strip(
+                "."
+            )
+        )
+    )
+    modal_api_url = getattr(args, "modal_api_url", None)
 
     print(
         f"Starting Agent Praxis Multi-Seed Benchmark:\n"
@@ -990,6 +1367,14 @@ def main() -> None:
         for env_name in environments:
             if args.seeds:
                 env_seeds = args.seeds
+            elif getattr(args, "matched_seeds", False):
+                count = getattr(args, "cycles", None) or getattr(args, "num_seeds", 30)
+                env_seeds = FINAL_MATCHED_SEEDS[:count]
+            elif getattr(args, "finals", False):
+                count = getattr(args, "cycles", None) or (
+                    args.num_seeds if args.num_seeds > 1 else 30
+                )
+                env_seeds = FINAL_MATCHED_SEEDS[:count]
             else:
                 from agent_praxis.framework.runner.multiseed.schemas import SeedConfig
 
@@ -1011,6 +1396,8 @@ def main() -> None:
                 baseten_api_url=baseten_api_url,
                 openai_api_key=openai_api_key,
                 openai_api_url=openai_api_url,
+                modal_api_key=modal_api_key,
+                modal_api_url=modal_api_url,
             )
             # Remove existing match if re-running
             all_summaries = [

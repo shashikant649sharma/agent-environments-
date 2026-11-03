@@ -1,3 +1,3 @@
-from agent_praxis.commands import demo, environment, validate
+from agent_praxis.commands import demo, environment, monitor, validate
 
-__all__ = ["demo", "environment", "validate"]
+__all__ = ["demo", "environment", "monitor", "validate"]

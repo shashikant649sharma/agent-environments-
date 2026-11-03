@@ -1,0 +1,86 @@
+{
+  "protocol_version": "1.0.0-frozen",
+  "git_commit": "5008d8f098b4a0045d5ee78e157aa1c08b2a12a0",
+  "git_branch": "feat/research-console-and-cloud-finals",
+  "git_clean": true,
+  "prompt_version": "sre-json-action-index-v2",
+  "variant": "standard",
+  "context_policy": "full_history",
+  "input_token_budget": 7040,
+  "completion_reserve": 2048,
+  "max_completion_tokens": 1024,
+  "temperature": 0.0,
+  "models_count": 9,
+  "models": [
+    {
+      "id": "meta-models/Muse-Spark-Open-816B-A42B",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-muse-spark-open-816b-a42b-server.us-west.modal.direct/v1"
+    },
+    {
+      "id": "meta-models/muse-spark-open-1026",
+      "provider": "baseten",
+      "endpoint": "https://inference.baseten.co/v1/chat/completions"
+    },
+    {
+      "id": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-deepseek-v4-1-flash-server.us-west.modal.direct/v1"
+    },
+    {
+      "id": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-deepseek-v4-1-flash-1017-server.us-west.modal.direct/v1"
+    },
+    {
+      "id": "zai-org/GLM-5.3-Flash",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-glm-5-3-flash-server.us-west.modal.direct/v1"
+    },
+    {
+      "id": "zai-org/GLM-5.3",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-glm-5-3-server.us-west.modal.direct/v1"
+    },
+    {
+      "id": "nvidia/GLM-5.3-Flash-NVFP4",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-glm-5-3-flash-nvfp4-server.us-west.modal.direct/v1"
+    },
+    {
+      "id": "moonshotai/Kimi-K3",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-kimi-k3-server.us-west.modal.direct/v1"
+    },
+    {
+      "id": "Qwen/Qwen3.8-Max-VL-Thinking",
+      "provider": "modal",
+      "endpoint": "https://shashikant649--ep-qwen3-8-max-vl-thinking-server.us-west.modal.direct/v1"
+    }
+  ],
+  "environments": [
+    "dorian-gray",
+    "catch-22",
+    "1984",
+    "metamorphosis",
+    "the-trial",
+    "frankenstein",
+    "sorcerers-apprentice",
+    "sophies-choice",
+    "library-of-babel",
+    "othello"
+  ],
+  "scoring_rubric": {
+    "task_completion": 0.4,
+    "evidence": 0.3,
+    "diagnosis": 0.15,
+    "compliance": 0.1,
+    "efficiency": 0.05
+  },
+  "source_hashes": {
+    "agent_praxis/framework/prompt.py": "af7879e18307c6fb0ad7bee59292493f9f2617f4c8f4adb2346b05ca1f9de9fa",
+    "agent_praxis/framework/gymnasium_wrapper.py": "717625b4680bb2ebc161c639d7c7d6346b30cf8ffc9c4550d260c08b57964602",
+    "benchmark_models.py": "04f92a730526d481df780f999027e98952e710a1a51ac49b416497e8e8d40a5e",
+    "agent_praxis/commands/monitor.py": "adfb058a68b62267d02caa296e1e8c6d60ada24f616c05cb68f42d19965714af"
+  }
+}

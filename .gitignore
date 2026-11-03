@@ -73,6 +73,9 @@ tmp/
 experiments/
 scratch/
 sandbox/
+finals_*.json
+benchmark_results*.json
+reference_controls_results*.json
 # Windows redirect artifact
 NUL
 contact-import-template.csv

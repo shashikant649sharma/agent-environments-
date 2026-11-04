@@ -85,13 +85,17 @@ def aggregate_model_episodes(model_name: str, records: list[EpisodeRecord]) -> M
 
         # Parse failure and clean-run discrimination
         pf_records = [
-            r for r in valid_records
-            if r.parse_failures > 0 or r.failure_class == FailureClass.PARSE_FAILURE or 'parse' in (r.error or '').lower()
+            r
+            for r in valid_records
+            if r.parse_failures > 0
+            or r.failure_class == FailureClass.PARSE_FAILURE
+            or "parse" in (r.error or "").lower()
         ]
         pf_count = len(pf_records)
         hard_pf_count = sum(
-            1 for r in pf_records
-            if r.failure_class == FailureClass.PARSE_FAILURE or r.error_kind == 'parse_failure'
+            1
+            for r in pf_records
+            if r.failure_class == FailureClass.PARSE_FAILURE or r.error_kind == "parse_failure"
         )
         clean_records = [r for r in valid_records if r not in pf_records]
         clean_count = len(clean_records)

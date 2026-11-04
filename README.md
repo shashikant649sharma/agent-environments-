@@ -85,7 +85,7 @@ Agent Praxis completely decouples the agent's interaction loop from the evaluati
 </p>
 
 ### The Evaluation Cycle
-1. **Sanitized Observation:** At turn $t$, the agent receives observable environmental state and typed action signatures conforming to the canonical JSON protocol (`sre-json-action-index-v1`).
+1. **Sanitized Observation:** At turn $t$, the agent receives observable environmental state and typed action signatures conforming to the canonical JSON protocol (`sre-json-action-index-v2`).
 2. **Agent Action:** The agent emits a structured action selection `{"action_index": N}` along with an optional reasoning commentary trace.
 3. **Causal State Mutation:** The environment executes the selected operation against real underlying systems (PostgreSQL databases, cryptographic volumes, mock microgrids, or log stores).
 4. **Independent Inspection:** When finalized or when step budgets expire, the out-of-band evaluator inspects ground truth directly via internal memory and disk state.
@@ -103,19 +103,22 @@ All reported metrics are extracted programmatically from immutable raw experimen
 
 ### 4.1 Frontier Model Comparison
 
-Evaluated across all 10 adversarial environments. Infrastructure errors (e.g., provider timeouts or HTTP 429 rate limits) are isolated via the failure hierarchy and excluded from model cognitive reasoning scores. Valid mean scores and task success rates strictly share the identical valid-run denominator ($N_{\text{valid}}$).
+Evaluated across all 10 adversarial environments. Infrastructure errors (e.g., provider timeouts or HTTP 429 rate limits) are isolated via the deterministic failure hierarchy and excluded from model cognitive reasoning scores. Valid mean scores and task success rates strictly share the identical valid-run denominator ($N_{\text{valid}}$).
 
-| Model Configuration | Valid Episodes | Valid Mean Score (95% CI) | Task Success Rate (95% Wilson CI) | Compliance Rate | Provider Flake Rate |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| `meta-models/Muse-Spark-Open-816B-A42B` | 300/300 | **0.8507** [0.8174, 0.8840] | **250/300** (83.3% [78.7%, 87.1%]) | 93.0% | 0.0% (0/300) |
-| `moonshotai/Kimi-K3` | 300/300 | **0.6627** [0.6277, 0.6977] | **177/300** (59.0% [53.4%, 64.4%]) | 80.7% | 0.0% (0/300) |
-| `deepseek-ai/DeepSeek-V4.1-Flash` | 300/300 | **0.6402** [0.6015, 0.6789] | **155/300** (51.7% [46.1%, 57.2%]) | 80.0% | 0.0% (0/300) |
-| `deepseek-ai/DeepSeek-V4.1-Flash-1017` | 300/300 | **0.6083** [0.5694, 0.6472] | **175/300** (58.3% [52.7%, 63.7%]) | 78.3% | 0.0% (0/300) |
-| `zai-org/GLM-5.3` | 300/300 | **0.5008** [0.4578, 0.5438] | **140/300** (46.7% [41.2%, 52.3%]) | 58.0% | 0.0% (0/300) |
-| `zai-org/GLM-5.3-Flash` | 300/300 | **0.4890** [0.4496, 0.5284] | **126/300** (42.0% [36.6%, 47.6%]) | 59.3% | 0.0% (0/300) |
-| `nvidia/GLM-5.3-Flash-NVFP4` | 300/300 | **0.4664** [0.4285, 0.4664] | **121/300** (40.3% [35.0%, 45.9%]) | 56.7% | 0.0% (0/300) |
-| `meta-models/muse-spark-open-1026` | 8/10 | **0.4683** [0.1856, 0.7510] | **3/8** (37.5% [13.7%, 69.4%]) | 75.0% | 20.0% (2/10) |
-| `Qwen/Qwen3.8-Max-VL-Thinking` | 60/60 | **0.4500** [0.3238, 0.5762] | **30/60** (50.0% [37.7%, 62.3%]) | 50.0% | 0.0% (0/60) |
+To ensure complete scientific transparency between cognitive reasoning and formatting fragility, we report both **All-Run Mean** (which penalizes unparseable output as 0.0) and **Clean-Only Mean** (which isolates cognitive score when the model successfully emits compliant action syntax).
+
+| Model Configuration | Valid Episodes | All-Run Mean (95% CI) | Parse-Fail Episodes (Hard) | Clean-Only Mean (95% CI) | Task Success Rate (95% Wilson CI) | Compliance Rate | Provider Flake Rate |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `meta-models/Muse-Spark-Open-816B-A42B` | 300/300 | **0.8507** [0.8182, 0.8832] | 2/300 (0) | **0.8519** [0.8194, 0.8844] | **250/300** (83.3% [78.7%, 87.1%]) | 93.0% | 0.0% (0/300) |
+| `moonshotai/Kimi-K3` | 300/300 | **0.6627** [0.6209, 0.7044] | 57/300 (2) | **0.7498** [0.7093, 0.7903] | **177/300** (59.0% [53.3%, 64.4%]) | 80.7% | 0.0% (0/300) |
+| `deepseek-ai/DeepSeek-V4.1-Flash` | 300/300 | **0.6402** [0.5996, 0.6809] | 0/300 (0) | **0.6402** [0.5996, 0.6809] | **155/300** (51.7% [46.0%, 57.3%]) | 80.0% | 0.0% (0/300) |
+| `deepseek-ai/DeepSeek-V4.1-Flash-1017` | 300/300 | **0.6083** [0.5620, 0.6546] | 72/300 (53) | **0.7638** [0.7238, 0.8038] | **175/300** (58.3% [52.7%, 63.8%]) | 78.3% | 0.0% (0/300) |
+| `zai-org/GLM-5.3` | 300/300 | **0.5008** [0.4491, 0.5524] | 235/300 (114) | **0.8456** [0.7868, 0.9043] | **140/300** (46.7% [41.1%, 52.3%]) | 58.0% | 0.0% (0/300) |
+| `zai-org/GLM-5.3-Flash` | 300/300 | **0.4890** [0.4410, 0.5370] | 167/300 (64) | **0.7322** [0.6774, 0.7870] | **126/300** (42.0% [36.5%, 47.6%]) | 59.3% | 0.0% (0/300) |
+| `nvidia/GLM-5.3-Flash-NVFP4` | 300/300 | **0.4664** [0.4181, 0.5148] | 170/300 (67) | **0.7213** [0.6635, 0.7792] | **121/300** (40.3% [34.9%, 46.0%]) | 56.7% | 0.0% (0/300) |
+| `Qwen/Qwen3.8-Max-VL-Thinking` | 60/60 | **0.4500** [0.3338, 0.5662] | 33/60 (30) | **0.9000** [0.9000, 0.9000] | **30/60** (50.0% [37.7%, 62.3%]) | 50.0% | 0.0% (0/60) |
+
+> <sup>1</sup> **Pilot Evaluation Footnote (`meta-models/muse-spark-open-1026`):** Evaluated during early pilot benchmark validation across 10 episodes ($N=10$, 8 valid, 2 provider timeouts). Score: **0.4683** [0.0971, 0.8394], task success: 3/8 (37.5% [13.7%, 69.4%]), compliance: 75.0%, flake: 20.0%. Excluded from the primary finals matrix to maintain uniform sample depth ($N \ge 60$). Truncation was verified to stem from initial `META_MAX_TOKENS = 300` decoding limits; resolved in `benchmark_models.py` by allocating a 1,024-token budget.
 
 *Artifact Sources:* [`results/finals_full.json`](results/finals_full.json) (SHA-256: `f615a97c...`), [`results/muse_spark_open_10env_benchmark.json`](results/muse_spark_open_10env_benchmark.json) (SHA-256: `af27bf97...`).
 
@@ -346,7 +349,11 @@ agent-praxis/
 ## 11. Research Documentation Index
 
 - **[Research Methodology & Report](docs/HACKATHON_REPORT.md):** Comprehensive technical report documenting empirical findings, effect sizes, and paired permutation hypothesis tests.
+- **[Final Research Run Protocol](docs/specification/FINAL_RESEARCH_RUN_PROTOCOL.md):** Multi-seed sampling controls, provider configurations, and cloud execution parameters.
 - **[Results & Statistical Evaluation](RESULTS.md):** Detailed breakdown of split invariants, BCa bootstrap estimations, and trap exposure metrics.
+- **[Full Audit Report](audit_report.md):** Independent comprehensive audit report verifying reproducibility, scoring integrity, and commit provenance.
+- **[Parse Failure Taxonomy](research/validation/parse_failure_taxonomy.csv):** Turn-by-turn categorization of 736 parse failures distinguishing format drift from reasoning collapse.
+- **[Quarantine Register](research/validation/quarantine_register.csv):** Active tracking and formal disposition of difficult or anomalous environment behaviors (1984, Sophie's Choice, Dorian Gray).
 - **[Four New Environments Specification](docs/specification/four-new-environments.md):** Architectural specifications for Sorcerer's Apprentice, Sophie's Choice, Library of Babel, and Othello.
 - **[Benchmark Protocol v0.5](docs/BENCHMARK_PROTOCOL_V05.md):** Standardized input budgeting (7,040 tokens) and prompt versioning.
 - **[Security & Governance Model](docs/SECURITY_AND_GOVERNANCE.md):** Container isolation, out-of-band evaluation boundaries, and anti-cheat enforcement.
@@ -360,8 +367,11 @@ agent-praxis/
 
 Agent Praxis is actively maintained as an open research benchmark. We explicitly document our research scope and constraints:
 1. **Pilot vs Full Scale:** Single-seed evaluations establish reachability and baseline compliance but cannot substantiate statistical generalization; multi-seed evaluations ($N \ge 30$) with reported confidence bounds are necessary for comparative ranking.
-2. **Deterministic Step Budgets:** All evaluations enforce a fixed maximum step budget ($T \le 16$).
+2. **Deterministic Step Budgets:** All evaluations enforce a fixed maximum step budget ($T \le 24$).
 3. **Decoy Specificity:** The benchmark specifically targets known failure archetypes (superficial patching, sycophantic capitulation, wild-card destruction). Performance on these archetypes does not guarantee resistance to unmodeled real-world failure modes.
+4. **Environment Pathology & Diagnostic Sensitivity:** As documented in our [`research/validation/quarantine_register.csv`](research/validation/quarantine_register.csv), two environments exhibit high friction under zero-shot autonomous operation:
+   - *1984 (mean 0.3120, 3.3% solve rate across 210 episodes):* Ground truth requires reading telemetry endpoints 3, 4 (`read_network_stats`), and 5 before restart; models frequently inspect 3 and 5 while omitting 4, receiving zero task credit.
+   - *Dorian Gray (mean 0.1480, 10.4% solve rate across 210 episodes):* Severe susceptibility to the superficial `patch_health_report` cosmetic decoy, compounded by output token truncation when reasoning traces exceed legacy provider budgets.
 
 ---
 

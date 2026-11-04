@@ -22,23 +22,20 @@ $$\text{provider\_error} \succ \text{context\_overflow} \succ \text{parse\_failu
 
 ## 2. Frontier Model Suite Reconciliation
 
-The frontier benchmark encompasses **9 model configurations**:
+The frontier benchmark encompasses **9 model configurations** across 2,170 total episodes:
 
-| Model Configuration | Underlying Artifact | Total Runs | Valid Runs | Provider Errors | Parse Failures | Mean Score (Valid) | Median Score (Valid) | Task Success (Valid) | Compliance Rate |
+| Model Configuration | Underlying Artifact | Total Runs | Valid Runs | Parse-Fail Runs (Hard) | Clean Runs | All-Run Mean | Clean-Only Mean | Task Success (Valid) | Compliance Rate |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Muse Spark Open 816B A42B** | `finals_full.json` | 300 | 300 | 0 | 0 | 0.8507 | 1.0000 | 250 / 300 (83.3%) | 93.0% |
-| **Muse Spark Open 1026** | `muse_spark_open_10env_benchmark.json` | 10 | 10 | 0 | 2 | 0.3746 | 0.1800 | 3 / 10 (30.0%) | 60.0% |
-| **DeepSeek V4.1 Flash** | `finals_full.json` | 300 | 300 | 0 | 0 | 0.6402 | 0.9000 | 155 / 300 (51.7%) | 80.0% |
-| **DeepSeek V4.1 Flash 1017** | `finals_full.json` | 300 | 300 | 0 | 53 | 0.6083 | 0.7500 | 175 / 300 (58.3%) | 78.3% |
-| **Kimi K3** | `finals_full.json` | 300 | 300 | 0 | 2 | 0.6627 | 0.9000 | 177 / 300 (59.0%) | 80.7% |
-| **GLM 5.3** | `finals_full.json` | 300 | 300 | 0 | 114 | 0.5008 | 0.3000 | 140 / 300 (46.7%) | 58.0% |
-| **GLM 5.3 Flash** | `finals_full.json` | 300 | 300 | 0 | 64 | 0.4890 | 0.3000 | 126 / 300 (42.0%) | 59.3% |
-| **GLM 5.3 Flash NVFP4** | `finals_full.json` | 300 | 300 | 0 | 67 | 0.4664 | 0.3000 | 121 / 300 (40.3%) | 56.7% |
-| **Qwen 3.8 Max VL Thinking** | `finals_full.json` | 60 | 60 | 0 | 30 | 0.4500 | 0.9000 | 30 / 60 (50.0%) | 50.0% |
+| **Muse Spark Open 816B A42B** | `finals_full.json` | 300 | 300 | 2 (0) | 298 | 0.8507 | 0.8519 | 250 / 300 (83.3%) | 93.0% |
+| **Kimi K3** | `finals_full.json` | 300 | 300 | 57 (2) | 243 | 0.6627 | 0.7498 | 177 / 300 (59.0%) | 80.7% |
+| **DeepSeek V4.1 Flash** | `finals_full.json` | 300 | 300 | 0 (0) | 300 | 0.6402 | 0.6402 | 155 / 300 (51.7%) | 80.0% |
+| **DeepSeek V4.1 Flash 1017** | `finals_full.json` | 300 | 300 | 72 (53) | 228 | 0.6083 | 0.7638 | 175 / 300 (58.3%) | 78.3% |
+| **GLM 5.3** | `finals_full.json` | 300 | 300 | 235 (114) | 65 | 0.5008 | 0.8456 | 140 / 300 (46.7%) | 58.0% |
+| **GLM 5.3 Flash** | `finals_full.json` | 300 | 300 | 167 (64) | 133 | 0.4890 | 0.7322 | 126 / 300 (42.0%) | 59.3% |
+| **GLM 5.3 Flash NVFP4** | `finals_full.json` | 300 | 300 | 170 (67) | 130 | 0.4664 | 0.7213 | 121 / 300 (40.3%) | 56.7% |
+| **Qwen 3.8 Max VL Thinking** | `finals_full.json` | 60 | 60 | 33 (30) | 27 | 0.4500 | 0.9000 | 30 / 60 (50.0%) | 50.0% |
 
-### Note on Pilot Single-Seed ($N=10$) Calibration vs Full Sweep ($N=300$)
-- In the pilot single-seed calibration runs ($N=1$ canonical seed per environment, total $N=10$ episodes), certain individual seed selections produced high scores (e.g., Muse Spark Open 816B A42B on Seed 1003 scored 0.9050 with 9/10 success; DeepSeek V4.1 Flash on Seed 1013 scored 0.6310 with 5/10 success).
-- The README will explicitly publish the full multi-seed distributions, while transparently documenting pilot vs full sweep methodology to eliminate sampling bias.
+> <sup>1</sup> **Pilot Validation Run (`meta-models/muse-spark-open-1026`):** `results/muse_spark_open_10env_benchmark.json` (N=10, 8 valid, 2 provider timeouts). Score: 0.4683 [0.0971, 0.8394], task success: 3/8 (37.5%), compliance: 75.0%, flake: 20.0%. Excluded from primary finals table to maintain uniform multi-seed sample depth ($N \ge 60$). Truncation occurred under `META_MAX_TOKENS = 300` decoding limits; resolved in `benchmark_models.py` by allocating a 1,024-token budget.
 
 ---
 

@@ -11,21 +11,44 @@ if TYPE_CHECKING:
 def generate_frontier_model_table(models: list[ModelMetrics]) -> str:
     """Generate Markdown comparison table for evaluated frontier models."""
     lines = [
-        "| Model Configuration | Valid Episodes | Valid Mean Score (95% CI) | Task Success Rate (95% Wilson CI) | Compliance Rate | Provider Flake Rate |",
-        "| :--- | :---: | :---: | :---: | :---: | :---: |",
+        "| Model Configuration | Valid Episodes | All-Run Mean (95% CI) | Parse-Fail Episodes (Hard) | Clean-Only Mean (95% CI) | Task Success Rate (95% Wilson CI) | Compliance Rate | Provider Flake Rate |",
+        "| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
     ]
 
-    for m in models:
+    # Sort primarily by all-run mean descending, separating pilot models to footnotes
+    primary_models = [m for m in models if "1026" not in m.model]
+    pilot_models = [m for m in models if "1026" in m.model]
+    primary_models.sort(key=lambda x: x.mean_score, reverse=True)
+
+    for m in primary_models:
         mean_str = f"**{m.mean_score:.4f}** [{m.mean_ci_low:.4f}, {m.mean_ci_high:.4f}]"
+        pf_str = f"{m.parse_fail_episodes}/{m.valid_episodes} ({m.hard_parse_fail_episodes})"
+        clean_str = (
+            f"**{m.clean_mean_score:.4f}** [{m.clean_mean_ci_low:.4f}, {m.clean_mean_ci_high:.4f}]"
+            if m.clean_episodes > 0
+            else "N/A"
+        )
         succ_pct = m.task_success_rate * 100.0
         succ_str = f"**{m.task_success_count}/{m.valid_episodes}** ({succ_pct:.1f}% [{m.wilson_ci_low * 100:.1f}%, {m.wilson_ci_high * 100:.1f}%])"
         comp_str = f"{m.compliance_rate * 100:.1f}%"
         prov_str = f"{m.provider_failure_rate * 100:.1f}% ({m.provider_errors}/{m.total_episodes})"
         lines.append(
-            f"| `{m.model}` | {m.valid_episodes}/{m.total_episodes} | {mean_str} | {succ_str} | {comp_str} | {prov_str} |"
+            f"| `{m.model}` | {m.valid_episodes}/{m.total_episodes} | {mean_str} | {pf_str} | {clean_str} | {succ_str} | {comp_str} | {prov_str} |"
         )
 
-    return "\n".join(lines)
+    output = "\n".join(lines)
+    if pilot_models:
+        p = pilot_models[0]
+        output += (
+            f"\n\n> <sup>1</sup> **Pilot Evaluation Footnote (`{p.model}`):** Evaluated during early pilot benchmark validation "
+            f"across 10 episodes ($N=10$, {p.valid_episodes} valid, {p.provider_errors} provider timeouts). "
+            f"Score: **{p.mean_score:.4f}** [{p.mean_ci_low:.4f}, {p.mean_ci_high:.4f}], task success: {p.task_success_count}/{p.valid_episodes} "
+            f"({p.task_success_rate * 100:.1f}% [{p.wilson_ci_low * 100:.1f}%, {p.wilson_ci_high * 100:.1f}%]), compliance: {p.compliance_rate * 100:.1f}%, flake: {p.provider_failure_rate * 100:.1f}%. "
+            f"Excluded from the primary finals matrix to maintain uniform sample depth ($N \\ge 60$). Truncation was verified "
+            f"to stem from initial `META_MAX_TOKENS = 300` decoding limits; resolved in `benchmark_models.py` by allocating a 1,024-token budget."
+        )
+
+    return output
 
 
 def generate_baseline_table(baselines: dict[str, BaselineEnvironmentMetrics]) -> str:

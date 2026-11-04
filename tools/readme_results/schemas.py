@@ -64,6 +64,12 @@ class ModelMetrics:
     wilson_ci_high: float
     mean_ci_low: float
     mean_ci_high: float
+    parse_fail_episodes: int = 0
+    hard_parse_fail_episodes: int = 0
+    clean_episodes: int = 0
+    clean_mean_score: float = 0.0
+    clean_mean_ci_low: float = 0.0
+    clean_mean_ci_high: float = 0.0
     per_environment: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 

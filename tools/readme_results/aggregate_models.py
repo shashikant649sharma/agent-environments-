@@ -82,6 +82,30 @@ def aggregate_model_episodes(model_name: str, records: list[EpisodeRecord]) -> M
         comp_rate = round(compliances / valid_count, 4)
         wilson_low, wilson_high = wilson_score_interval(successes, valid_count)
         mean_low, mean_high = continuous_mean_interval(scores)
+
+        # Parse failure and clean-run discrimination
+        pf_records = [
+            r
+            for r in valid_records
+            if r.parse_failures > 0
+            or r.failure_class == FailureClass.PARSE_FAILURE
+            or "parse" in (r.error or "").lower()
+        ]
+        pf_count = len(pf_records)
+        hard_pf_count = sum(
+            1
+            for r in pf_records
+            if r.failure_class == FailureClass.PARSE_FAILURE or r.error_kind == "parse_failure"
+        )
+        clean_records = [r for r in valid_records if r not in pf_records]
+        clean_count = len(clean_records)
+        if clean_count > 0:
+            c_scores = [r.score for r in clean_records]
+            clean_mean = round(sum(c_scores) / clean_count, 4)
+            clean_low, clean_high = continuous_mean_interval(c_scores)
+        else:
+            clean_mean = 0.0
+            clean_low, clean_high = 0.0, 0.0
     else:
         mean_s = 0.0
         med_s = 0.0
@@ -93,6 +117,11 @@ def aggregate_model_episodes(model_name: str, records: list[EpisodeRecord]) -> M
         comp_rate = 0.0
         wilson_low, wilson_high = 0.0, 0.0
         mean_low, mean_high = 0.0, 0.0
+        pf_count = 0
+        hard_pf_count = 0
+        clean_count = 0
+        clean_mean = 0.0
+        clean_low, clean_high = 0.0, 0.0
 
     # Per-environment breakdowns
     per_env: dict[str, dict[str, Any]] = {}
@@ -130,5 +159,11 @@ def aggregate_model_episodes(model_name: str, records: list[EpisodeRecord]) -> M
         wilson_ci_high=wilson_high,
         mean_ci_low=mean_low,
         mean_ci_high=mean_high,
+        parse_fail_episodes=pf_count,
+        hard_parse_fail_episodes=hard_pf_count,
+        clean_episodes=clean_count,
+        clean_mean_score=clean_mean,
+        clean_mean_ci_low=clean_low,
+        clean_mean_ci_high=clean_high,
         per_environment=per_env,
     )

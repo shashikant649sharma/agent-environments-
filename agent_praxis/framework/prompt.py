@@ -998,7 +998,7 @@ def get_action_from_groq(
     max_retries: int = 4,
     timeout_seconds: int = 60,
     temperature: float = 0.0,
-    max_tokens: int = 300,
+    max_tokens: int = 1024,
     url: str = GROQ_URL,
 ) -> ModelTurnResponse:
     """Execute an action query against Groq with token usage extraction and backoff."""
@@ -1134,7 +1134,7 @@ def get_action_from_meta(
     max_retries: int = 4,
     timeout_seconds: int = 60,
     temperature: float = 0.0,
-    max_tokens: int = 300,
+    max_tokens: int = 1024,
 ) -> ModelTurnResponse:
     """Execute an action query against Meta API with token usage extraction and backoff."""
     if limits is None:
